@@ -33,3 +33,11 @@ export async function loadSettings(): Promise<Settings> {
 export async function saveSettings(patch: Partial<Settings>): Promise<void> {
   await db.settings.bulkPut(Object.entries(patch).map(([key, value]) => ({ key, value })));
 }
+
+/** Strip what a phone paste can carry along: spaces, line breaks, invisible characters, quotes, a "Key:" label. */
+export function cleanKey(raw: string): string {
+  return raw
+    .replace(/[\s\u200B-\u200D\u2060\uFEFF\u00A0]+/g, '')
+    .replace(/^["'\u201C\u201D\u2018\u2019]+|["'\u201C\u201D\u2018\u2019]+$/g, '')
+    .replace(/^(api)?key[:=]/i, '');
+}

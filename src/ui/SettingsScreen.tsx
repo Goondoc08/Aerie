@@ -8,6 +8,7 @@ import type { Spot } from '../lib/spots';
 import { SPOT_FORECASTS } from '../lib/forecast';
 import { HOTSPOTS, rankHotspots, type Suggestion } from '../lib/hotspots';
 import { loadStations, nearestStations } from '../lib/stations';
+import { cleanKey } from '../lib/settings';
 import { tideKey } from '../lib/tides';
 
 interface Props {
@@ -137,7 +138,7 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
 
       <WeightsForm current={settings.weights} onSave={(weights) => onSave({ weights })} />
 
-      <KeyForm current={settings.ebirdKey} onSave={(ebirdKey) => onSave({ ebirdKey })} />
+      <KeyForm current={settings.ebirdKey} check={status.birds} onSave={(ebirdKey) => onSave({ ebirdKey })} />
 
       <section className="panel form">
         <h2>Data</h2>
@@ -226,15 +227,15 @@ function SpotForm({ spot, isNew, onDone }: { spot?: Spot; isNew?: boolean; onDon
   );
 }
 
-/** The eBird key: masked, kept only in this browser's storage, sent only to eBird. */
-function KeyForm({ current, onSave }: { current: string; onSave: (key: string) => Promise<void> }) {
+/** The eBird key: masked, kept only in this browser's storage, sent only to eBird. eBird itself is the check. */
+function KeyForm({ current, check, onSave }: { current: string; check?: { busy: boolean; failed: boolean; error?: string }; onSave: (key: string) => Promise<void> }) {
   const [key, setKey] = useState(current);
   const [show, setShow] = useState(false);
   const [msg, setMsg] = useState('');
   const save = async (e: FormEvent) => {
     e.preventDefault();
-    const k = key.trim();
-    if (k && !/^[A-Za-z0-9]{6,40}$/.test(k)) return setMsg('That does not look like an eBird key (letters and numbers only).');
+    const k = cleanKey(key);
+    setKey(k);
     await onSave(k);
     setMsg(k ? 'Key saved on this device' : 'Key removed');
   };
@@ -254,6 +255,11 @@ function KeyForm({ current, onSave }: { current: string; onSave: (key: string) =
         {current && <button className="btn" type="button" onClick={async () => { setKey(''); await onSave(''); setMsg('Key removed'); }}>Remove key</button>}
         {msg && <span className="sub" role="status">{msg}</span>}
       </div>
+      {current && check && (
+        <div className={check.failed ? 'err' : 'sub'} role="status">
+          {check.busy ? 'Checking with eBird…' : check.failed ? (check.error ?? 'eBird did not answer') : 'eBird accepted the key'}
+        </div>
+      )}
     </form>
   );
 }
