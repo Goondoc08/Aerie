@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DAYS_SHOWN, REFRESH_HOURS, TIDE, TIMEZONE } from './lib/config';
 import { db, type CacheRow } from './lib/db';
-import { ago, dayId, todayIn } from './lib/dates';
+import { analyseBirds, refreshBirds, type BirdGroup, type Report } from './lib/birds';
+import { ago, dayId, nowIn, todayIn } from './lib/dates';
 import { refreshForecast } from './lib/forecast';
 import { bestOpenWindow, parseForecast, scoreWeek } from './lib/scoring';
 import { loadSettings, saveSettings, type Settings } from './lib/settings';
@@ -28,7 +29,7 @@ const useHash = () => {
 const stationsFor = (spots: Spot[]) =>
   [...new Set([TIDE.homeStation, ...spots.filter((s) => s.tidal && s.stationId).map((s) => s.stationId!)])];
 
-export interface Status { busy: boolean; failed: boolean }
+export interface Status { busy: boolean; failed: boolean; error?: string }
 export type Sources = Record<string, Status>;
 
 export default function App() {
@@ -50,9 +51,9 @@ export default function App() {
     try {
       const row = await job();
       setRows((prev) => ({ ...prev, [key]: row }));
-      mark(key, { busy: false, failed: false });
-    } catch {
-      mark(key, { busy: false, failed: true });
+      mark(key, { busy: false, failed: false, error: undefined });
+    } catch (e) {
+      mark(key, { busy: false, failed: true, error: e instanceof Error ? e.message : String(e) });
     }
   }, []);
 
@@ -65,6 +66,11 @@ export default function App() {
     for (const st of stationsFor(sp)) {
       const key = tideKey(st), t = cached[key];
       if (force || !t || Date.now() - t.fetchedAt > REFRESH_HOURS.tides * HOUR) run(key, () => refreshTides(st));
+    }
+    const b = cached.birds;
+    const birdsMoved = b && (b.lat !== s.lat || b.lng !== s.lng);
+    if (s.ebirdKey && (force || birdsMoved || !b || Date.now() - b.fetchedAt > REFRESH_HOURS.birds * HOUR)) {
+      run('birds', () => refreshBirds(s.lat, s.lng, s.ebirdKey));
     }
   }, [run]);
 
@@ -97,7 +103,9 @@ export default function App() {
     const next = { ...settings, ...patch };
     setSettings(next);
     await saveSettings(patch);
-    if (next.lat !== settings.lat || next.lng !== settings.lng) run('forecast', () => refreshForecast(next.lat, next.lng));
+    const moved = next.lat !== settings.lat || next.lng !== settings.lng;
+    if (moved) run('forecast', () => refreshForecast(next.lat, next.lng));
+    if (next.ebirdKey && (moved || next.ebirdKey !== settings.ebirdKey)) run('birds', () => refreshBirds(next.lat, next.lng, next.ebirdKey));
   };
 
   const reloadSpots = async () => {
@@ -118,6 +126,12 @@ export default function App() {
     return m;
   }, [rows]);
 
+  const birdRow = rows.birds ?? null;
+  // Sightings count only while a key is set; removing the key hides them.
+  const birds = useMemo(() => (birdRow && settings?.ebirdKey
+    ? analyseBirds(birdRow.data as Report[], nowIn(TIMEZONE), { lat: settings.lat, lng: settings.lng, spots })
+    : null), [birdRow, settings?.ebirdKey, settings?.lat, settings?.lng, spots]);
+
   // Header notes: say which part is out of date, and the forecast's age past six hours.
   const notes: string[] = [];
   if (forecast) {
@@ -131,6 +145,11 @@ export default function App() {
     notes.push(Number.isFinite(oldest) ? `Tides out of date, last updated ${ago(oldest)}` : 'Tides could not be loaded');
   }
 
+  if (birdRow && settings?.ebirdKey) {
+    if (status.birds?.failed) notes.push(`Sightings out of date, last updated ${ago(birdRow.fetchedAt)}`);
+    else if (Date.now() - birdRow.fetchedAt > REFRESH_HOURS.staleBanner * HOUR) notes.push(`Sightings from ${ago(birdRow.fetchedAt)}`);
+  }
+
   const detailDay = week.find((d) => dayId(d.date) === hash);
   const openDay = (date: string) => { setFocus(date); fromHome.current = true; location.hash = dayId(date); };
   const goHome = () => {
@@ -140,7 +159,7 @@ export default function App() {
   useEffect(() => { if (!detailDay) fromHome.current = false; }, [detailDay]);
   useEffect(() => { if (detailDay) setFocus(detailDay.date); }, [detailDay]);
 
-  const model = { settings: settings!, forecast: f, week, best, spots, tides, today };
+  const model: Model = { settings: settings!, forecast: f, week, best, spots, tides, today, birds, birdRow };
 
   return (
     <>
@@ -149,8 +168,8 @@ export default function App() {
         {!loaded || !settings ? null : hash === 'settings' ? (
           <SettingsScreen settings={settings} spots={spots} rows={rows} status={status} stations={stationsFor(spots)}
             onSave={update} onSpotsChanged={reloadSpots}
-            onRefresh={(key) => key === 'forecast'
-              ? run(key, () => refreshForecast(settings.lat, settings.lng))
+            onRefresh={(key) => key === 'forecast' ? run(key, () => refreshForecast(settings.lat, settings.lng))
+              : key === 'birds' ? run(key, () => refreshBirds(settings.lat, settings.lng, settings.ebirdKey))
               : run(key, () => refreshTides(key.slice(6)))} />
         ) : detailDay && f ? (
           <Detail model={model} day={detailDay} onBack={goHome} onMaxDrive={(maxDrive) => update({ maxDrive })} />
@@ -171,4 +190,7 @@ export type Model = {
   spots: Spot[];
   tides: TideMap;
   today: string;
+  /** Sightings that passed the filter, or null when there is no key or no data yet. */
+  birds: BirdGroup[] | null;
+  birdRow: CacheRow | null;
 };

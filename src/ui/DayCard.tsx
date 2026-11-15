@@ -1,6 +1,7 @@
 import type { Model } from '../App';
 import { TIDE, TIMEZONE } from '../lib/config';
-import { clock12, hourOf, monthDay, shortClock, weekday } from '../lib/dates';
+import { birdsApply } from '../lib/birds';
+import { clock12, daysBetween, hourOf, monthDay, shortClock, weekday } from '../lib/dates';
 import { compass, morningHours, reason, type DayScore, type Hour } from '../lib/scoring';
 import { dayLow, feet } from '../lib/tides';
 import { clock, sunTimes } from '../lib/twilight';
@@ -58,12 +59,26 @@ export const lowTideText = (model: Model, date: string) => {
   return low ? `${clock12(low.time)} · ${feet(low.ft)} ft` : 'none this day';
 };
 
+/** Spot rows for a day, with sightings on the next four days. Card and detail page share this. */
+export function spotRows(model: Model, day: DayScore) {
+  const sun = model.forecast!.days.find((d) => d.date === day.date)!;
+  const birds = model.birds && birdsApply(daysBetween(model.today, day.date)) ? model.birds : undefined;
+  return rankSpots(model.spots, day, sun.sunset, model.tides, model.settings.maxDrive, { birds });
+}
+
+/** Unusual birds in range, for the next four days only; null on other days or with no sightings data. */
+export function birdCount(model: Model, day: DayScore): number | null {
+  if (!model.birds || !birdsApply(daysBetween(model.today, day.date))) return null;
+  return model.birds.filter((b) => b.driveMin <= model.settings.maxDrive).length;
+}
+
 export const shortName = (name: string) => name.replace(/ (Nature Center|State Park|Neotropical Bird Sanctuary)$/, '');
 
 export function DayCard({ day, model, onOpen }: { day: DayScore; model: Model; onOpen: () => void }) {
   const t = dayTimes(model, day.date);
   const am = morningHours(model.forecast!, day.date);
-  const bet = day.shift ? null : bestBet(rankSpots(model.spots, day, t.sun.sunset, model.tides, model.settings.maxDrive));
+  const bet = day.shift ? null : bestBet(spotRows(model, day));
+  const nb = birdCount(model, day);
   return (
     <article className={`card v-${verdictClass(day.morning)}${day.shift ? ' shift' : ''}`} tabIndex={0}
       aria-label={`${weekday(day.date)} ${monthDay(day.date)}, open details`}
@@ -79,6 +94,7 @@ export function DayCard({ day, model, onOpen }: { day: DayScore; model: Model; o
           <dt>Best bet</dt>
           <dd className="bet">{bet ? <>{shortName(bet.row.spot.name)}, {bet.which} <span className={`pill sm ${verdictClass(bet.score)}`}>{verdictText(bet.score)}</span></> : 'No spots in range'}</dd>
         </>}
+        {nb != null && nb > 0 && <><dt>Unusual</dt><dd>{nb} bird{nb > 1 ? 's' : ''} reported in range</dd></>}
       </dl>
       <div className="foot">
         <span className="conf">Forecast: {day.confidence}</span>

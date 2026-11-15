@@ -38,6 +38,14 @@ export const clock12 = (isoLocal: string) => `${shortClock(isoLocal)} ${hourOf(i
 /** "2026-11-17" -> "20261117" */
 export const compactDay = (day: string) => day.replaceAll('-', '');
 
+/** The local time now in the given timezone, as "2026-11-14T23:30". */
+export const nowIn = (timeZone: string, now = new Date()) => {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+    timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  }).formatToParts(now).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+};
+
 export function ago(ms: number, now = Date.now()): string {
   const mins = Math.max(0, Math.round((now - ms) / 60000));
   if (mins < 60) return `${mins} min ago`;

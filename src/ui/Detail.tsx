@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import type { Model } from '../App';
 import { DRIVE, TIDE } from '../lib/config';
-import { clock12, hourOf, monthDay, weekday } from '../lib/dates';
+import { birdNote, birdsApply, type BirdGroup, type Label } from '../lib/birds';
+import { clock12, daysBetween, hourOf, monthDay, weekday } from '../lib/dates';
 import { eveningHours, lowTideInWindow, morningHours, reason, type DayScore, type TidePoint } from '../lib/scoring';
 import { feet } from '../lib/tides';
-import { rankSpots, type SpotRow, type SpotWindow } from '../lib/where';
-import { dayTimes, HourTable, lowTideText, Window } from './DayCard';
+import type { SpotRow, SpotWindow } from '../lib/where';
+import { dayTimes, HourTable, lowTideText, spotRows, Window } from './DayCard';
 import { verdictClass, verdictText } from './Home';
 
 interface Props { model: Model; day: DayScore; onBack: () => void; onMaxDrive: (min: number) => void }
@@ -32,7 +33,7 @@ export function Detail({ model, day, onBack, onMaxDrive }: Props) {
   const amLow = tides ? lowTideInWindow(tides, day.date, 'morning', t.sun.sunset) : null;
   const pmLow = tides ? lowTideInWindow(tides, day.date, 'evening', t.sun.sunset) : null;
   const maxDrive = model.settings.maxDrive;
-  const list = rankSpots(model.spots, day, t.sun.sunset, model.tides, maxDrive);
+  const list = spotRows(model, day);
   const far = list.filter((r) => !r.inRange).length;
   const pmLabel = pm.length ? `${hourOf(pm[0].time) % 12 || 12} PM` : '';
 
@@ -76,8 +77,14 @@ export function Detail({ model, day, onBack, onMaxDrive }: Props) {
             const note = tideNote(r);
             return (
               <div key={r.spot.id ?? r.spot.name} className={`spot${r.inRange ? '' : ' far'}`}>
-                <div className="n">{r.spot.name}<small>{r.spot.type} · {r.spot.driveMin} min</small></div>
-                {note && <div className="note">{note}</div>}
+                <div className="n">{r.spot.name}<small>{r.spot.type} · {r.driveEstimated ? '~' : ''}{r.spot.driveMin} min</small></div>
+                {(note || r.bird || r.watch) && (
+                  <div className="note">
+                    {r.bird && <span className="tag front">{r.bird.comName} reported</span>}
+                    {r.watch && <span className="tag">{r.watch.comName} reported once</span>}
+                    {note && <span>{note}</span>}
+                  </div>
+                )}
                 <div className="scores">
                   <span className="lbl">AM</span><span className={`pill sm ${verdictClass(r.morning.score)}`}>{verdictText(r.morning.score)}</span>
                   <span className="lbl">PM</span><span className={`pill sm ${verdictClass(r.evening.score)}`}>{verdictText(r.evening.score)}</span>
@@ -88,6 +95,49 @@ export function Detail({ model, day, onBack, onMaxDrive }: Props) {
         </div>
         {far > 0 && <div className="sub" style={{ marginTop: 6 }}>{far} faded spot{far > 1 ? 's are' : ' is'} beyond {maxDrive} min</div>}
       </section>
+
+      <BirdsPanel model={model} day={day} />
     </div>
+  );
+}
+
+const LABEL_CLASS: Record<Label, string> = { Lingering: 'go', Returning: 'ok', Confirmed: 'ok', Watch: 'warn' };
+
+function BirdsPanel({ model, day }: { model: Model; day: DayScore }) {
+  const { settings, birds, birdRow } = model;
+  const maxDrive = settings.maxDrive;
+  const applies = birdsApply(daysBetween(model.today, day.date));
+  const reports = (birdRow?.data as unknown[] | undefined)?.length ?? 0;
+  const dates = ((birdRow?.data as { obsDt: string }[] | undefined) ?? []).map((r) => r.obsDt.slice(0, 10)).sort();
+  const md = (d: string) => monthDay(d);
+  const row = (b: BirdGroup) => (
+    <div key={b.key} className={`spot${b.driveMin <= maxDrive ? '' : ' far'}`}>
+      <div className="n">{b.comName}<small>{b.locName} · {b.driveEstimated ? '~' : ''}{b.driveMin} min</small></div>
+      <div className="note">{birdNote(b)}</div>
+      <span className={`pill ${LABEL_CLASS[b.label]}`}>{b.label}</span>
+    </div>
+  );
+  return (
+    <section className="panel">
+      <h2>Unusual birds</h2>
+      {!settings.ebirdKey ? (
+        <div className="sub">Add your eBird key in <a className="link" href="#settings">Settings</a> to see unusual birds.</div>
+      ) : !birds ? (
+        <div className="sub">Sightings have not loaded yet.</div>
+      ) : (
+        <>
+          <div className="spots">
+            {birds.length === 0 && <div className="sub">No unusual birds reported in the last few days.</div>}
+            {birds.map(row)}
+          </div>
+          <div className="sub" style={{ marginTop: 6 }}>
+            {reports > 0 && <>From {reports} eBird report{reports > 1 ? 's' : ''}, {md(dates[0])} to {md(dates.at(-1)!)}. </>}
+            {applies ? 'Lingering, Returning and Confirmed birds move spots up the list.'
+              : 'Too far ahead for these to change the spot list; treat them as stale.'}
+            {' '}Data: <a className="link" href="https://ebird.org" target="_blank" rel="noreferrer">eBird.org</a>
+          </div>
+        </>
+      )}
+    </section>
   );
 }

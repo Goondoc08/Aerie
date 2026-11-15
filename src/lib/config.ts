@@ -65,6 +65,7 @@ export const BIRDS = {
   returningDays: 2,
   affectsNextDays: 4,
   maxTemporary: 2,
+  atSpotKm: 2, // a report this close to one of my spots counts as "at" that spot
 };
 
 export const REFRESH_HOURS = { forecast: 3, tides: 24, birds: 6, staleBanner: 6 };

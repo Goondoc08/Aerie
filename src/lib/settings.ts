@@ -7,6 +7,8 @@ export interface Settings {
   lng: number;
   shiftAnchor: string;
   maxDrive: number;
+  /** Kept only on this device; sent only to eBird. */
+  ebirdKey: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -15,6 +17,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lng: HOME_DEFAULT.lng,
   shiftAnchor: SHIFT.anchorDate,
   maxDrive: DRIVE.default,
+  ebirdKey: '',
 };
 
 export async function loadSettings(): Promise<Settings> {

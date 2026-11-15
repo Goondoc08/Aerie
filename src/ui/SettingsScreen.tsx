@@ -39,6 +39,7 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
   const sources = [
     { key: 'forecast', label: 'Forecast · Open-Meteo' },
     ...stations.map((st) => ({ key: tideKey(st), label: `Tides · NOAA station ${st}` })),
+    ...(settings.ebirdKey ? [{ key: 'birds', label: 'Sightings · eBird notable' }] : []),
   ];
 
   return (
@@ -97,6 +98,8 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
         )}
       </section>
 
+      <KeyForm current={settings.ebirdKey} onSave={(ebirdKey) => onSave({ ebirdKey })} />
+
       <section className="panel form">
         <h2>Data</h2>
         {sources.map(({ key, label }) => {
@@ -107,7 +110,7 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
               <div>{label}</div>
               <div className="when">
                 {s?.busy ? 'refreshing…' : row ? `updated ${ago(row.fetchedAt)}` : 'not loaded yet'}
-                {s?.failed && ' · last refresh failed'}
+                {s?.failed && ` · last refresh failed${s.error ? `: ${s.error}` : ''}`}
               </div>
             </div>
             <button className="btn" type="button" disabled={s?.busy} onClick={() => onRefresh(key)}>{s?.busy ? 'Refreshing…' : 'Refresh'}</button>
@@ -163,6 +166,38 @@ function SpotForm({ spot, onDone }: { spot?: Spot; onDone: () => Promise<void> }
         <button className="btn solid" type="submit">{spot ? 'Save spot' : 'Add spot'}</button>
         <button className="btn" type="button" onClick={() => onDone()}>Cancel</button>
         {err && <span className="err" role="status">{err}</span>}
+      </div>
+    </form>
+  );
+}
+
+/** The eBird key: masked, kept only in this browser's storage, sent only to eBird. */
+function KeyForm({ current, onSave }: { current: string; onSave: (key: string) => Promise<void> }) {
+  const [key, setKey] = useState(current);
+  const [show, setShow] = useState(false);
+  const [msg, setMsg] = useState('');
+  const save = async (e: FormEvent) => {
+    e.preventDefault();
+    const k = key.trim();
+    if (k && !/^[A-Za-z0-9]{6,40}$/.test(k)) return setMsg('That does not look like an eBird key (letters and numbers only).');
+    await onSave(k);
+    setMsg(k ? 'Key saved on this device' : 'Key removed');
+  };
+  return (
+    <form className="panel form" onSubmit={save} autoComplete="off">
+      <h2>eBird</h2>
+      <div className="sub">Your eBird API key stays on this device and is sent only to eBird. Get one at <a className="link" href="https://ebird.org/api/keygen" target="_blank" rel="noreferrer">ebird.org/api/keygen</a>.</div>
+      <div className="key-row">
+        <label className="field" htmlFor="ebird-key">API key
+          <input id="ebird-key" type={show ? 'text' : 'password'} value={key} autoComplete="off" spellCheck={false}
+            onChange={(e) => setKey(e.target.value)} />
+        </label>
+        <button className="btn" type="button" onClick={() => setShow(!show)} aria-pressed={show}>{show ? 'Hide' : 'Show'}</button>
+      </div>
+      <div className="actions">
+        <button className="btn solid" type="submit">Save key</button>
+        {current && <button className="btn" type="button" onClick={async () => { setKey(''); await onSave(''); setMsg('Key removed'); }}>Remove key</button>}
+        {msg && <span className="sub" role="status">{msg}</span>}
       </div>
     </form>
   );
