@@ -1,0 +1,1445 @@
+{
+ "note": "Real responses saved Nov 14-15 2026 for Pearland TX (29.5633,-95.2861). Hour rows are [tempF, wind mph, gust mph, wind direction deg, cloud %, rain chance %].",
+ "days": [
+  {
+   "date": "2026-11-15",
+   "sunrise": "06:45",
+   "sunset": "17:25",
+   "shiftDay": true,
+   "morningHours_07_08_09_10": [
+    [
+     56.8,
+     12,
+     26.8,
+     60,
+     100,
+     29
+    ],
+    [
+     55.6,
+     15.3,
+     33.6,
+     66,
+     100,
+     43
+    ],
+    [
+     55.6,
+     15.1,
+     32.7,
+     75,
+     100,
+     52
+    ],
+    [
+     56.5,
+     13.6,
+     30.4,
+     78,
+     100,
+     40
+    ]
+   ],
+   "eveningHours_15_16_17": [
+    [
+     64.5,
+     11.2,
+     26.4,
+     75,
+     100,
+     65
+    ],
+    [
+     59.5,
+     15,
+     24.6,
+     28,
+     100,
+     78
+    ],
+    [
+     56.2,
+     17,
+     31.1,
+     42,
+     100,
+     73
+    ]
+   ]
+  },
+  {
+   "date": "2026-11-16",
+   "sunrise": "06:46",
+   "sunset": "17:25",
+   "shiftDay": false,
+   "morningHours_07_08_09_10": [
+    [
+     50.1,
+     11.6,
+     28.4,
+     35,
+     72,
+     16
+    ],
+    [
+     51,
+     11,
+     26.2,
+     39,
+     100,
+     20
+    ],
+    [
+     51.7,
+     11.5,
+     25.1,
+     38,
+     100,
+     18
+    ],
+    [
+     53,
+     11.1,
+     24.2,
+     43,
+     100,
+     14
+    ]
+   ],
+   "eveningHours_15_16_17": [
+    [
+     59.9,
+     8.8,
+     16.1,
+     39,
+     23,
+     5
+    ],
+    [
+     59.4,
+     7.2,
+     15.4,
+     42,
+     41,
+     5
+    ],
+    [
+     57.9,
+     4.4,
+     13,
+     40,
+     100,
+     5
+    ]
+   ]
+  },
+  {
+   "date": "2026-11-17",
+   "sunrise": "06:47",
+   "sunset": "17:24",
+   "shiftDay": false,
+   "morningHours_07_08_09_10": [
+    [
+     49.7,
+     7.6,
+     21.5,
+     47,
+     0,
+     0
+    ],
+    [
+     52.2,
+     8.1,
+     20.6,
+     53,
+     0,
+     0
+    ],
+    [
+     55.6,
+     9.9,
+     16.8,
+     62,
+     0,
+     0
+    ],
+    [
+     59,
+     9.2,
+     14.8,
+     67,
+     0,
+     0
+    ]
+   ],
+   "eveningHours_15_16_17": [
+    [
+     66.2,
+     7.8,
+     9.8,
+     87,
+     0,
+     0
+    ],
+    [
+     65.5,
+     8.5,
+     11.9,
+     84,
+     0,
+     0
+    ],
+    [
+     62.6,
+     5.6,
+     11.2,
+     90,
+     0,
+     0
+    ]
+   ]
+  },
+  {
+   "date": "2026-11-18",
+   "sunrise": "06:48",
+   "sunset": "17:24",
+   "shiftDay": false,
+   "morningHours_07_08_09_10": [
+    [
+     55.6,
+     7.8,
+     17.7,
+     53,
+     73,
+     0
+    ],
+    [
+     58.1,
+     7.8,
+     19.7,
+     59,
+     100,
+     0
+    ],
+    [
+     62.2,
+     9.4,
+     17.9,
+     72,
+     14,
+     0
+    ],
+    [
+     65.7,
+     8.8,
+     14.8,
+     83,
+     100,
+     0
+    ]
+   ],
+   "eveningHours_15_16_17": [
+    [
+     71.3,
+     9,
+     10.1,
+     104,
+     100,
+     3
+    ],
+    [
+     69.7,
+     7.6,
+     9.8,
+     109,
+     100,
+     3
+    ],
+    [
+     66.8,
+     6.7,
+     12.5,
+     120,
+     100,
+     3
+    ]
+   ]
+  },
+  {
+   "date": "2026-11-19",
+   "sunrise": "06:48",
+   "sunset": "17:24",
+   "shiftDay": false,
+   "morningHours_07_08_09_10": [
+    [
+     59.4,
+     6.8,
+     19.2,
+     46,
+     100,
+     6
+    ],
+    [
+     61.4,
+     7.9,
+     18.8,
+     55,
+     100,
+     6
+    ],
+    [
+     64.3,
+     9.3,
+     15.9,
+     66,
+     100,
+     6
+    ],
+    [
+     67.2,
+     9.3,
+     14.1,
+     75,
+     100,
+     6
+    ]
+   ],
+   "eveningHours_15_16_17": [
+    [
+     72.4,
+     9.7,
+     13,
+     98,
+     100,
+     8
+    ],
+    [
+     71.1,
+     9.8,
+     14.5,
+     106,
+     91,
+     8
+    ],
+    [
+     67.9,
+     8.1,
+     14.8,
+     114,
+     78,
+     8
+    ]
+   ]
+  },
+  {
+   "date": "2026-11-20",
+   "sunrise": "06:49",
+   "sunset": "17:23",
+   "shiftDay": true,
+   "morningHours_07_08_09_10": [
+    [
+     62.5,
+     7.1,
+     16.3,
+     62,
+     3,
+     3
+    ],
+    [
+     64.9,
+     8.1,
+     17.9,
+     74,
+     4,
+     3
+    ],
+    [
+     67.3,
+     9.2,
+     18.8,
+     84,
+     5,
+     3
+    ],
+    [
+     69.8,
+     10.3,
+     18.6,
+     94,
+     5,
+     3
+    ]
+   ],
+   "eveningHours_15_16_17": [
+    [
+     72.1,
+     11.8,
+     13,
+     112,
+     90,
+     6
+    ],
+    [
+     70.4,
+     11,
+     14.1,
+     110,
+     83,
+     6
+    ],
+    [
+     68.3,
+     9.8,
+     15.9,
+     106,
+     63,
+     6
+    ]
+   ]
+  },
+  {
+   "date": "2026-11-21",
+   "sunrise": "06:50",
+   "sunset": "17:23",
+   "shiftDay": true,
+   "morningHours_07_08_09_10": [
+    [
+     64.9,
+     5.6,
+     9.8,
+     95,
+     90,
+     7
+    ],
+    [
+     67.3,
+     6.7,
+     11.6,
+     88,
+     92,
+     7
+    ],
+    [
+     69.5,
+     7.6,
+     12.8,
+     90,
+     94,
+     7
+    ],
+    [
+     71.7,
+     8.4,
+     13,
+     99,
+     96,
+     7
+    ]
+   ],
+   "eveningHours_15_16_17": [
+    [
+     74.9,
+     9.4,
+     8.9,
+     112,
+     87,
+     21
+    ],
+    [
+     72.9,
+     8.4,
+     9.6,
+     112,
+     91,
+     21
+    ],
+    [
+     70,
+     7.2,
+     11,
+     112,
+     97,
+     21
+    ]
+   ]
+  },
+  {
+   "date": "2026-11-22",
+   "sunrise": "06:51",
+   "sunset": "17:23",
+   "shiftDay": false,
+   "morningHours_07_08_09_10": [
+    [
+     63.7,
+     6.5,
+     22.6,
+     59,
+     26,
+     25
+    ],
+    [
+     65.2,
+     7.2,
+     22.1,
+     60,
+     47,
+     25
+    ],
+    [
+     67.1,
+     8,
+     21.3,
+     63,
+     57,
+     25
+    ],
+    [
+     69.5,
+     8.6,
+     19.5,
+     69,
+     44,
+     25
+    ]
+   ],
+   "eveningHours_15_16_17": [
+    [
+     74.8,
+     9.5,
+     12.3,
+     98,
+     99,
+     19
+    ],
+    [
+     72.7,
+     8.1,
+     11,
+     104,
+     100,
+     19
+    ],
+    [
+     69.8,
+     6.4,
+     9.2,
+     115,
+     100,
+     19
+    ]
+   ]
+  },
+  {
+   "date": "2026-11-23",
+   "sunrise": "06:52",
+   "sunset": "17:23",
+   "shiftDay": false,
+   "morningHours_07_08_09_10": [
+    [
+     60.5,
+     7.6,
+     17,
+     45,
+     100,
+     8
+    ],
+    [
+     61.5,
+     8.6,
+     16.8,
+     41,
+     100,
+     8
+    ],
+    [
+     62.9,
+     9.4,
+     16.1,
+     40,
+     99,
+     8
+    ],
+    [
+     65,
+     9.5,
+     15,
+     47,
+     96,
+     8
+    ]
+   ],
+   "eveningHours_15_16_17": [
+    [
+     67.2,
+     8.2,
+     15,
+     55,
+     100,
+     10
+    ],
+    [
+     66.6,
+     7.9,
+     14.8,
+     50,
+     100,
+     10
+    ],
+    [
+     65.9,
+     7.8,
+     14.1,
+     44,
+     100,
+     10
+    ]
+   ]
+  }
+ ],
+ "tides_station_8771450_MLLW_ft_local": [
+  {
+   "t": "2026-11-15 00:50",
+   "ft": 1.647,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-15 13:48",
+   "ft": 0.258,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-16 00:02",
+   "ft": 1.595,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-16 14:37",
+   "ft": 0.367,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-16 23:59",
+   "ft": 1.539,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-17 15:26",
+   "ft": 0.506,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-18 00:04",
+   "ft": 1.475,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-18 16:21",
+   "ft": 0.676,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-19 00:09",
+   "ft": 1.409,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-19 07:10",
+   "ft": 0.859,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-19 12:26",
+   "ft": 1.103,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-19 17:29",
+   "ft": 0.866,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-20 00:10",
+   "ft": 1.354,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-20 07:12",
+   "ft": 0.589,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-20 13:56",
+   "ft": 1.275,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-20 18:51",
+   "ft": 1.055,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-21 00:07",
+   "ft": 1.331,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-21 07:28",
+   "ft": 0.288,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-21 15:02",
+   "ft": 1.479,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-21 20:09",
+   "ft": 1.226,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-22 00:02",
+   "ft": 1.351,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-22 07:53",
+   "ft": -0.017,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-22 15:57",
+   "ft": 1.669,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-22 21:21",
+   "ft": 1.377,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-22 23:57",
+   "ft": 1.416,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-23 08:26",
+   "ft": -0.289,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-23 16:47",
+   "ft": 1.804,
+   "type": "H"
+  },
+  {
+   "t": "2026-11-24 09:05",
+   "ft": -0.496,
+   "type": "L"
+  },
+  {
+   "t": "2026-11-24 17:37",
+   "ft": 1.862,
+   "type": "H"
+  }
+ ],
+ "ebird_notable_dist50_back7_fetched_2026-11-14": [
+  {
+   "speciesCode": "balori",
+   "comName": "Baltimore Oriole",
+   "sciName": "Icterus galbula",
+   "locId": "L3229429",
+   "locName": "Glenbrook Valley - Sims Bayou, Houston",
+   "obsDt": "2026-11-14 11:30",
+   "howMany": 1,
+   "lat": 29.6777751,
+   "lng": -95.2810818,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": true,
+   "subId": "S410496230"
+  },
+  {
+   "speciesCode": "rebmer",
+   "comName": "Red-breasted Merganser",
+   "sciName": "Mergus serrator",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-14 06:26",
+   "howMany": 12,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S410498121"
+  },
+  {
+   "speciesCode": "woosto",
+   "comName": "Wood Stork",
+   "sciName": "Mycteria americana",
+   "locId": "L76683130",
+   "locName": "Brazos Bend SP--40-Acre Lake",
+   "obsDt": "2026-11-13 09:36",
+   "howMany": 2,
+   "lat": 29.373873,
+   "lng": -95.6229401,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S410191981"
+  },
+  {
+   "speciesCode": "allhum",
+   "comName": "Allen's Hummingbird",
+   "sciName": "Selasphorus sasin",
+   "locId": "L839995",
+   "locName": "Riverpark Nature Trails (Sugar Land)",
+   "obsDt": "2026-11-13 07:00",
+   "howMany": 1,
+   "lat": 29.5772196,
+   "lng": -95.6777322,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S410163522"
+  },
+  {
+   "speciesCode": "balori",
+   "comName": "Baltimore Oriole",
+   "sciName": "Icterus galbula",
+   "locId": "L3229429",
+   "locName": "Glenbrook Valley - Sims Bayou, Houston",
+   "obsDt": "2026-11-12 12:03",
+   "howMany": 1,
+   "lat": 29.6777751,
+   "lng": -95.2810818,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": true,
+   "subId": "S410020350"
+  },
+  {
+   "speciesCode": "wesmea",
+   "comName": "Western Meadowlark",
+   "sciName": "Sturnella neglecta",
+   "locId": "L438238",
+   "locName": "Rice U. Campus",
+   "obsDt": "2026-11-12 10:00",
+   "howMany": 2,
+   "lat": 29.714489,
+   "lng": -95.401809,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S409998491"
+  },
+  {
+   "speciesCode": "balori",
+   "comName": "Baltimore Oriole",
+   "sciName": "Icterus galbula",
+   "locId": "L79389478",
+   "locName": "Woodlawn Cemetery, Houston US-TX (29.7875,-95.4777)",
+   "obsDt": "2026-11-12 09:50",
+   "howMany": 1,
+   "lat": 29.78752,
+   "lng": -95.477732,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": true,
+   "subId": "S410090731"
+  },
+  {
+   "speciesCode": "grekis",
+   "comName": "Great Kiskadee",
+   "sciName": "Pitangus sulphuratus",
+   "locId": "L17128867",
+   "locName": "57-Acre Park, Galveston",
+   "obsDt": "2026-11-12 08:15",
+   "howMany": 1,
+   "lat": 29.5310616,
+   "lng": -95.0198346,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409996958"
+  },
+  {
+   "speciesCode": "allhum",
+   "comName": "Allen's Hummingbird",
+   "sciName": "Selasphorus sasin",
+   "locId": "L839995",
+   "locName": "Riverpark Nature Trails (Sugar Land)",
+   "obsDt": "2026-11-12 07:25",
+   "howMany": 1,
+   "lat": 29.5772196,
+   "lng": -95.6777322,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S409988652"
+  },
+  {
+   "speciesCode": "wesmea",
+   "comName": "Western Meadowlark",
+   "sciName": "Sturnella neglecta",
+   "locId": "L4169225",
+   "locName": "F.M. Law Park",
+   "obsDt": "2026-11-12 07:23",
+   "howMany": 1,
+   "lat": 29.6534515,
+   "lng": -95.3208261,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S410024550"
+  },
+  {
+   "speciesCode": "audwar",
+   "comName": "Yellow-rumped Warbler (Audubon's)",
+   "sciName": "Setophaga coronata",
+   "locId": "L4169225",
+   "locName": "F.M. Law Park",
+   "obsDt": "2026-11-12 07:23",
+   "howMany": 1,
+   "lat": 29.6534515,
+   "lng": -95.3208261,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S410024550"
+  },
+  {
+   "speciesCode": "wesmea",
+   "comName": "Western Meadowlark",
+   "sciName": "Sturnella neglecta",
+   "locId": "L438238",
+   "locName": "Rice U. Campus",
+   "obsDt": "2026-11-12 06:47",
+   "howMany": 1,
+   "lat": 29.714489,
+   "lng": -95.401809,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S410015070"
+  },
+  {
+   "speciesCode": "x00422",
+   "comName": "Mallard x Mottled Duck (hybrid)",
+   "sciName": "Anas platyrhynchos x fulvigula",
+   "locId": "L20646512",
+   "locName": "Keegan’s Bayou Trail",
+   "obsDt": "2026-11-12 06:46",
+   "howMany": 1,
+   "lat": 29.6706811,
+   "lng": -95.5365423,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S410039155"
+  },
+  {
+   "speciesCode": "wesmea",
+   "comName": "Western Meadowlark",
+   "sciName": "Sturnella neglecta",
+   "locId": "L438238",
+   "locName": "Rice U. Campus",
+   "obsDt": "2026-11-12 06:01",
+   "howMany": 2,
+   "lat": 29.714489,
+   "lng": -95.401809,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S410007728"
+  },
+  {
+   "speciesCode": "bbwduc",
+   "comName": "Black-bellied Whistling-Duck",
+   "sciName": "Dendrocygna autumnalis",
+   "locId": "L79585938",
+   "locName": "Smith Point/Hawkins Camp Road Area",
+   "obsDt": "2026-11-11 15:29",
+   "howMany": 12,
+   "lat": 29.531935,
+   "lng": -94.7767564,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": true,
+   "subId": "S409854263"
+  },
+  {
+   "speciesCode": "balori",
+   "comName": "Baltimore Oriole",
+   "sciName": "Icterus galbula",
+   "locId": "L79389478",
+   "locName": "Woodlawn Cemetery, Houston US-TX (29.7875,-95.4777)",
+   "obsDt": "2026-11-11 14:01",
+   "howMany": 1,
+   "lat": 29.78752,
+   "lng": -95.477732,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": true,
+   "subId": "S409941646"
+  },
+  {
+   "speciesCode": "brwhaw",
+   "comName": "Broad-winged Hawk",
+   "sciName": "Buteo platypterus",
+   "locId": "L266064",
+   "locName": "San Jacinto Battleground (UTC 041)",
+   "obsDt": "2026-11-11 10:50",
+   "howMany": 1,
+   "lat": 29.7506484,
+   "lng": -95.0770891,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S409818482"
+  },
+  {
+   "speciesCode": "dickci",
+   "comName": "Dickcissel",
+   "sciName": "Spiza americana",
+   "locId": "L366758",
+   "locName": "Archbishop Fiorenza Park--W.of Eldridge Pkwy (Eldridge Retention Basin)",
+   "obsDt": "2026-11-11 09:18",
+   "howMany": 1,
+   "lat": 29.7193575,
+   "lng": -95.6289482,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S409778687"
+  },
+  {
+   "speciesCode": "allhum",
+   "comName": "Allen's Hummingbird",
+   "sciName": "Selasphorus sasin",
+   "locId": "L839995",
+   "locName": "Riverpark Nature Trails (Sugar Land)",
+   "obsDt": "2026-11-11 06:59",
+   "howMany": 1,
+   "lat": 29.5772196,
+   "lng": -95.6777322,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S409783936"
+  },
+  {
+   "speciesCode": "allhum",
+   "comName": "Allen's Hummingbird",
+   "sciName": "Selasphorus sasin",
+   "locId": "L839995",
+   "locName": "Riverpark Nature Trails (Sugar Land)",
+   "obsDt": "2026-11-10 16:10",
+   "howMany": 1,
+   "lat": 29.5772196,
+   "lng": -95.6777322,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S409680544"
+  },
+  {
+   "speciesCode": "bkhgro",
+   "comName": "Black-headed Grosbeak",
+   "sciName": "Pheucticus melanocephalus",
+   "locId": "L20646512",
+   "locName": "Keegan’s Bayou Trail",
+   "obsDt": "2026-11-10 06:35",
+   "howMany": 1,
+   "lat": 29.6706811,
+   "lng": -95.5365423,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S409545410"
+  },
+  {
+   "speciesCode": "lotduc",
+   "comName": "Long-tailed Duck",
+   "sciName": "Clangula hyemalis",
+   "locId": "L447759",
+   "locName": "Morgan's Point",
+   "obsDt": "2026-11-09 09:24",
+   "howMany": 1,
+   "lat": 29.6784474,
+   "lng": -94.9826073,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409324653"
+  },
+  {
+   "speciesCode": "annhum",
+   "comName": "Anna's Hummingbird",
+   "sciName": "Calypte anna",
+   "locId": "L1299132",
+   "locName": "\" Oceania Ct",
+   "obsDt": "2026-11-09 08:30",
+   "howMany": 1,
+   "lat": 29.7603277,
+   "lng": -95.7094413,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": true,
+   "subId": "S409337793"
+  },
+  {
+   "speciesCode": "balori",
+   "comName": "Baltimore Oriole",
+   "sciName": "Icterus galbula",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-09 07:47",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409301355"
+  },
+  {
+   "speciesCode": "dickci",
+   "comName": "Dickcissel",
+   "sciName": "Spiza americana",
+   "locId": "L366758",
+   "locName": "Archbishop Fiorenza Park--W.of Eldridge Pkwy (Eldridge Retention Basin)",
+   "obsDt": "2026-11-09 07:40",
+   "howMany": 1,
+   "lat": 29.7193575,
+   "lng": -95.6289482,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": false,
+   "subId": "S409675781"
+  },
+  {
+   "speciesCode": "balori",
+   "comName": "Baltimore Oriole",
+   "sciName": "Icterus galbula",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-09 07:36",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409304925"
+  },
+  {
+   "speciesCode": "balori",
+   "comName": "Baltimore Oriole",
+   "sciName": "Icterus galbula",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-09 07:02",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409277298"
+  },
+  {
+   "speciesCode": "sumtan",
+   "comName": "Summer Tanager",
+   "sciName": "Piranga rubra",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-09 06:33",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409281359"
+  },
+  {
+   "speciesCode": "sumtan",
+   "comName": "Summer Tanager",
+   "sciName": "Piranga rubra",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-09 06:22",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409321658"
+  },
+  {
+   "speciesCode": "balori",
+   "comName": "Baltimore Oriole",
+   "sciName": "Icterus galbula",
+   "locId": "L3229429",
+   "locName": "Glenbrook Valley - Sims Bayou, Houston",
+   "obsDt": "2026-11-08 15:35",
+   "howMany": 1,
+   "lat": 29.6777751,
+   "lng": -95.2810818,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": true,
+   "subId": "S409135690"
+  },
+  {
+   "speciesCode": "btbwar",
+   "comName": "Black-throated Blue Warbler",
+   "sciName": "Setophaga caerulescens",
+   "locId": "L128990",
+   "locName": "Hermann Park",
+   "obsDt": "2026-11-08 11:30",
+   "howMany": 1,
+   "lat": 29.7168676,
+   "lng": -95.3921521,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409231215"
+  },
+  {
+   "speciesCode": "sumtan",
+   "comName": "Summer Tanager",
+   "sciName": "Piranga rubra",
+   "locId": "L5521707",
+   "locName": "US-TX / Sugar Land - Avalon subdivision",
+   "obsDt": "2026-11-08 11:07",
+   "howMany": 1,
+   "lat": 29.5589144,
+   "lng": -95.6295319,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": true,
+   "subId": "S409057745"
+  },
+  {
+   "speciesCode": "annhum",
+   "comName": "Anna's Hummingbird",
+   "sciName": "Calypte anna",
+   "locId": "L1299132",
+   "locName": "\" Oceania Ct",
+   "obsDt": "2026-11-08 08:30",
+   "howMany": 1,
+   "lat": 29.7603277,
+   "lng": -95.7094413,
+   "obsValid": false,
+   "obsReviewed": false,
+   "locationPrivate": true,
+   "subId": "S409174768"
+  },
+  {
+   "speciesCode": "audwar",
+   "comName": "Yellow-rumped Warbler (Audubon's)",
+   "sciName": "Setophaga coronata",
+   "locId": "L4169225",
+   "locName": "F.M. Law Park",
+   "obsDt": "2026-11-08 07:09",
+   "howMany": 1,
+   "lat": 29.6534515,
+   "lng": -95.3208261,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S408991256"
+  },
+  {
+   "speciesCode": "norpar",
+   "comName": "Northern Parula",
+   "sciName": "Setophaga americana",
+   "locId": "L818789",
+   "locName": "Sylvan Rodriguez Park",
+   "obsDt": "2026-11-08 07:00",
+   "howMany": 1,
+   "lat": 29.5853815,
+   "lng": -95.1556563,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S408988561"
+  },
+  {
+   "speciesCode": "dickci",
+   "comName": "Dickcissel",
+   "sciName": "Spiza americana",
+   "locId": "L438238",
+   "locName": "Rice U. Campus",
+   "obsDt": "2026-11-08 06:50",
+   "howMany": 1,
+   "lat": 29.714489,
+   "lng": -95.401809,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S408964637"
+  },
+  {
+   "speciesCode": "norpar",
+   "comName": "Northern Parula",
+   "sciName": "Setophaga americana",
+   "locId": "L818789",
+   "locName": "Sylvan Rodriguez Park",
+   "obsDt": "2026-11-08 06:43",
+   "howMany": 1,
+   "lat": 29.5853815,
+   "lng": -95.1556563,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409048155"
+  },
+  {
+   "speciesCode": "purgal2",
+   "comName": "Purple Gallinule",
+   "sciName": "Porphyrio martinica",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-08 06:39",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409037069"
+  },
+  {
+   "speciesCode": "purgal2",
+   "comName": "Purple Gallinule",
+   "sciName": "Porphyrio martinica",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-08 06:38",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S408992433"
+  },
+  {
+   "speciesCode": "sumtan",
+   "comName": "Summer Tanager",
+   "sciName": "Piranga rubra",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-08 06:38",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S408992433"
+  },
+  {
+   "speciesCode": "dickci",
+   "comName": "Dickcissel",
+   "sciName": "Spiza americana",
+   "locId": "L438238",
+   "locName": "Rice U. Campus",
+   "obsDt": "2026-11-08 06:35",
+   "howMany": 1,
+   "lat": 29.714489,
+   "lng": -95.401809,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S408993000"
+  },
+  {
+   "speciesCode": "purgal2",
+   "comName": "Purple Gallinule",
+   "sciName": "Porphyrio martinica",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-08 06:16",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409069660"
+  },
+  {
+   "speciesCode": "towsol",
+   "comName": "Townsend's Solitaire",
+   "sciName": "Myadestes townsendi",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-08 06:16",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409069660"
+  },
+  {
+   "speciesCode": "balori",
+   "comName": "Baltimore Oriole",
+   "sciName": "Icterus galbula",
+   "locId": "L224113",
+   "locName": "Cullinan Park, Sugar Land (UTC 095)",
+   "obsDt": "2026-11-08 06:16",
+   "howMany": 1,
+   "lat": 29.6355459,
+   "lng": -95.6603193,
+   "obsValid": true,
+   "obsReviewed": true,
+   "locationPrivate": false,
+   "subId": "S409069660"
+  }
+ ],
+ "expected": {
+  "morningScores": [
+   0,
+   37,
+   84,
+   82,
+   73,
+   85,
+   78,
+   67,
+   69
+  ],
+  "eveningScores": [
+   0,
+   87,
+   94,
+   77,
+   67,
+   66,
+   64,
+   67,
+   72
+  ],
+  "bestOpenWindow": "2026-11-17 evening",
+  "temporarySpots_onNov15to18": [
+   "Riverpark Nature Trails (Sugar Land) - Allen's Hummingbird (4 days)",
+   "Archbishop Fiorenza Park - Dickcissel (2 days)"
+  ],
+  "watchOnly": [
+   "Wood Stork at Brazos Bend SP--40-Acre Lake (single unreviewed report)"
+  ],
+  "qualifiedButNotInTopTwo": [
+   "Great Kiskadee at 57-Acre Park (1 day, confirmed)",
+   "Yellow-rumped Warbler (Audubon's) at F.M. Law Park (2 days, subspecies ranks last)"
+  ],
+  "note": "Sighting expectations were worked out by hand from the rules in the prompt, with the fetch date taken as 2026-11-14. If the code disagrees, re-check the rule against the raw reports before changing either."
+ }
+}

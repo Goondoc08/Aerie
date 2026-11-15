@@ -1,0 +1,219 @@
+<title>Aerie</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Cormorant+Garamond:wght@700&display=swap">
+<style>
+/* Layout: header, a nine-day strip for comparison, then one large card per morning in a swipe carousel. A card opens a detail view. */
+:root{
+  --bg:#E9EFF5; --surface:#FFFFFF; --line:#BFCBDA; --fg:#16202E; --muted:#475569;
+  --accent:#0F766E; --accent2:#D9503C;
+  --go:#0F766E; --go-soft:#C9EEE7; --ok:#3B4BC4; --ok-soft:#DDE1FA;
+  --warn:#8A5300; --warn-soft:#FFE08A; --skip:#B3261E; --skip-soft:#FBD5D0;
+  --splash-bg:#0B1220; --splash-fg:#F1F7F6; --splash-k:#FFD166;
+  --display:"Bricolage Grotesque","Trebuchet MS",sans-serif;
+  --name:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0B1220; --surface:#162033; --line:#2E3B52; --fg:#E8EEF6; --muted:#A3B1C6;
+  --accent:#2DD4BF; --accent2:#FF8A75;
+  --go:#2DD4BF; --go-soft:#0F3F3C; --ok:#A5B0FF; --ok-soft:#262C5E;
+  --warn:#FFD166; --warn-soft:#4A3A0B; --skip:#FF8A80; --skip-soft:#4A1B18; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0B1220; --surface:#162033; --line:#2E3B52; --fg:#E8EEF6; --muted:#A3B1C6;
+  --accent:#2DD4BF; --accent2:#FF8A75;
+  --go:#2DD4BF; --go-soft:#0F3F3C; --ok:#A5B0FF; --ok-soft:#262C5E;
+  --warn:#FFD166; --warn-soft:#4A3A0B; --skip:#FF8A80; --skip-soft:#4A1B18; color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
+[hidden]{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;padding-block:18px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px}
+h1{font-family:var(--name);font-weight:700;font-size:36px;line-height:1.05;margin:0}
+h2{font-family:var(--name);font-weight:700;font-size:22px;margin:0 0 8px}
+.sub{color:var(--muted);font-size:13px}
+.mock{font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px dashed var(--line);color:var(--muted);padding:2px 8px;border-radius:99px}
+#home,#detail{display:flex;flex-direction:column;gap:14px}
+.strip{display:grid;grid-template-columns:repeat(9,1fr);gap:4px}
+.chip{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 7px;border-radius:8px;border:1px solid transparent;min-width:0}
+.chip:focus-visible,.card:focus-visible,.back:focus-visible,.more:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip[aria-pressed="true"]{background:var(--surface);border-color:var(--fg)}
+.chip .wd{font-size:11px;color:var(--muted);letter-spacing:.04em}
+.chip .dn{font-family:var(--display);font-weight:700;font-size:16px;line-height:1}
+.chip .dot{width:8px;height:8px;border-radius:50%}
+.dots{display:flex;gap:4px}.chip .dot.dia{border-radius:1px;transform:rotate(45deg)}
+.pill.sm{font-size:12px;padding:2px 8px;margin-right:4px}
+.chip.shift{opacity:.45}
+.b-go{background:var(--go)}.b-ok{background:var(--ok)}.b-warn{background:var(--warn)}.b-skip{background:var(--skip)}
+.legend{font-size:11.5px;color:var(--muted)}
+.car{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-block:4px 8px;padding-inline:max(7%,calc(50% - 205px))}
+.car::-webkit-scrollbar{display:none}
+.card{flex:0 0 min(86%,410px);scroll-snap-align:center;box-sizing:border-box;background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0;cursor:pointer}
+.card.v-go{border-top-color:var(--go)}.card.v-ok{border-top-color:var(--ok)}.card.v-warn{border-top-color:var(--warn)}.card.v-skip{border-top-color:var(--skip)}
+.card.shift{background:transparent;border-style:dashed;border-top-style:solid}
+.card.shift>*{opacity:.5}
+.win{display:flex;justify-content:space-between;align-items:center;gap:8px}.win b{display:block;font-family:var(--display);font-size:15px}.win span:not(.pill){font-size:12.5px;color:var(--muted)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.date{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.1}
+.date small{display:block;font-family:var(--body);font-weight:400;font-size:13px;color:var(--muted);margin-top:3px}
+.pill{font-size:13px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.go{background:var(--go-soft);color:var(--go)} .ok{background:var(--ok-soft);color:var(--ok)}
+.warn{background:var(--warn-soft);color:var(--warn)} .skip{background:var(--skip-soft);color:var(--skip)}
+.why{margin:0;font-size:16px;font-weight:500;text-wrap:balance}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:11.5px;padding:2px 8px;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+.tag.front{border-color:var(--accent2);color:var(--fg);box-shadow:inset 3px 0 0 var(--accent2)}
+table.hrs{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.hrs th,.hrs td{text-align:right;padding:4px 0;border-bottom:1px solid var(--line)}
+.hrs th{font-family:var(--body);font-weight:500;font-size:11.5px;color:var(--muted)}
+.hrs th:first-child,.hrs td:first-child{text-align:left;font-family:var(--body);color:var(--muted);font-size:12.5px}
+dl.kv{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:13.5px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;min-width:0}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto}
+.conf{font-size:11.5px;color:var(--muted);letter-spacing:.03em}
+.more,.back{all:unset;cursor:pointer;font-weight:600;font-size:13.5px;color:var(--accent)}
+.back{align-self:flex-start;padding:4px 0}
+.dhead{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.dhead.v-go{border-top-color:var(--go)}.dhead.v-ok{border-top-color:var(--ok)}.dhead.v-warn{border-top-color:var(--warn)}.dhead.v-skip{border-top-color:var(--skip)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.spots{display:flex;flex-direction:column}
+.spot{padding:10px 0;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 14px}
+.spot:first-child{border-top:0}
+.spot.far{opacity:.4}
+.spot .n{font-weight:600} .spot .n small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.spot .note{flex:1 1 240px;min-width:0;color:var(--muted);font-size:13.5px}
+.set{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:6px;font-size:13.5px;color:var(--muted)}
+.set input{accent-color:var(--accent);flex:1 1 180px;max-width:320px}.set output{font-family:var(--mono);color:var(--fg)}
+details.about{color:var(--muted);font-size:12.5px;max-width:80ch}
+details.about summary{cursor:pointer}
+details.about p{margin:8px 0 0}
+.link{all:unset;cursor:pointer;color:var(--accent);text-decoration:underline}
+#splash{position:fixed;inset:0;z-index:50;background:var(--splash-bg);color:var(--splash-fg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;cursor:pointer;transition:opacity .4s}
+#splash.out{opacity:0;pointer-events:none}
+#splash svg{width:min(46vw,190px);height:auto;animation:rise .7s ease-out both}
+.splash-name{font-family:var(--name);font-weight:700;font-size:44px;line-height:1;text-align:center}
+.splash-tag{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--splash-k);text-align:center}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#splash{transition:none}#splash svg{animation:none}.car{scroll-behavior:auto}}
+</style>
+<div id="splash" role="button" tabindex="0" aria-label="Dismiss splash screen"><svg aria-hidden="true" viewBox="0 0 192 245" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:affinity="https://www.affinity.studio/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="Background" transform="matrix(1,0,0,1,0.190461,-0.137254)">
+        <path d="M73.645,80.63C75.362,82.297 75.28,82.431 75.485,82.416C75.942,82.382 76.157,81.792 76.485,81.472C76.823,81.142 77.134,80.784 77.482,80.466C78.615,79.429 83.595,76.322 84.655,75.807C102.804,66.979 102.688,66.768 104.267,66.003C108.881,63.769 110.008,62.93 112.58,61.657C115.195,60.362 115.138,60.292 117.717,58.94C117.957,58.814 120.214,57.631 121.097,58.816C121.453,59.294 122.187,62.253 122.262,62.557C123.142,66.106 123.341,66.031 124.252,69.563C126.423,77.978 126.558,77.924 128.782,86.318C128.903,86.826 129.024,87.334 129.145,87.842L129.308,88.729C127.915,89.706 127.909,89.682 127.804,89.784C127.76,89.827 127.735,89.851 127.422,90.439C127.087,91.07 127.109,91.057 126.713,91.629C124.923,94.219 120.285,101.776 119.699,102.641C116.044,108.036 116.36,108.226 112.733,113.635C109.81,117.993 106,124.502 105.438,125.461C101.935,131.445 100.717,131.334 99.778,131.952C97.134,133.695 95.763,134.413 78.661,145.759C58.652,159.034 58.522,158.827 56.794,159.998C53.955,161.839 53.993,161.871 43.315,169.192C38.242,172.67 38.206,172.607 37.77,172.916C33.591,175.879 33.785,176.094 33.422,176.349C32.325,177.117 31.722,176.431 31.586,176.438L31.296,175.485C34.459,169.012 45.737,142.215 46.166,141.349C47.715,138.216 64.678,98.199 65.141,97.326C66.03,95.649 67.643,91.433 67.979,90.719C71.273,83.732 70.82,83.403 73.645,80.63Z" style="fill:#0F766E;stroke:#0B1220;stroke-width:0.9px;"/>
+        <path d="M150.936,26.248C151.305,26.833 151.304,26.811 151.67,27.41C153.708,30.75 155.013,29.273 157.301,31.685C158.486,32.934 159.513,36.137 159.531,37.5C159.556,39.505 158.334,42.181 158.28,42.184C157.934,42.202 157.728,41.644 157.382,41.662C157.116,40.947 157.2,40.927 156.855,40.249C156.383,39.318 156.434,39.176 155.429,38.944C154.795,38.798 154.132,38.83 153.483,38.781C150.43,38.552 150.426,39.11 148.631,41.607C146.836,43.923 146.847,43.916 145.185,46.332C143.993,49.953 145.252,55.384 145.735,61.482C146.392,69.796 146.517,69.774 146.561,70.497C147.406,84.315 147.569,84.291 147.641,85.492C148.042,92.242 147.954,92.33 146.956,93.813C146.695,94.199 144.257,97.821 143.658,98.616C139.062,104.708 132.417,114.438 130.664,116.622C128.722,119.043 128.435,119.215 124.413,128.458C122.743,132.295 121.868,133.811 121.564,134.529C116.838,145.656 116.283,145.394 111.588,156.538C110.455,159.226 111.532,160.034 112.675,162.425C113.934,165.06 114.026,164.998 115.383,167.571C116.558,169.797 118.597,169.361 122.499,169.359C128.818,169.358 130.569,168.411 132.129,174.546C132.597,176.383 131.618,177.225 130.323,175.84C128.166,173.531 127.219,173.835 120.513,173.921C104.628,174.125 101.189,173.643 99.484,174.458C98.69,174.838 98.801,174.96 98.424,175.36C97.534,176.3 97.093,176.651 96.523,175.491C96.319,175.076 97.054,173.591 97.13,173.438C97.844,171.994 97.677,171.905 98.673,170.655C100.219,168.714 104.315,169.594 106.496,169.474C108.727,169.352 107.407,166.809 107.296,166.596C105.412,162.968 105.476,162.941 105.294,162.636C103.884,160.274 100.316,163.77 98.523,163.415C96.772,163.069 95.211,156.827 91.21,149.754C91.04,149.301 90.704,148.921 90.534,148.467C90.513,148.412 90.518,147.708 90.034,146.76C89.053,144.84 88.848,144.995 87.38,143.402C87.924,142.917 87.899,142.909 88.451,142.449C90.176,141.009 91.042,140.896 93.352,139.267C95.82,137.527 103.32,133.324 104.575,131.569C107.378,127.65 107.818,126.744 111.132,121.304C113.072,117.784 129.564,92.188 129.778,91.571C130.358,89.894 129.477,89.15 129.308,88.729L129.145,87.842C129.024,87.334 128.903,86.826 128.782,86.318C126.558,77.924 126.423,77.978 124.252,69.563C123.341,66.031 123.142,66.106 122.262,62.557C122.187,62.253 121.453,59.294 121.097,58.816C120.214,57.631 117.957,58.814 117.717,58.94C115.138,60.292 115.195,60.362 112.58,61.657C110.008,62.93 108.881,63.769 104.267,66.003C102.688,66.768 102.804,66.979 84.655,75.807C83.595,76.322 78.615,79.429 77.482,80.466C77.134,80.784 76.823,81.142 76.485,81.472C76.157,81.792 75.942,82.382 75.485,82.416C75.28,82.431 75.362,82.297 73.645,80.63C74.985,79.301 81.026,74.077 81.566,73.573C82.061,73.11 84.695,70.651 87.807,67.84C88.427,67.259 92.443,63.5 95.676,60.715C100.215,56.802 99.576,56.267 102.635,50.562C104.435,46.96 104.497,47.01 106.273,43.388C111.257,33.228 112.533,31.274 113.18,30.282C116.975,25.994 117.493,26.571 122.189,22.172C125.887,18.708 127.302,20.504 133.454,20.931C148.512,21.976 148.787,22.798 150.936,26.248Z" style="fill:#14B8A6;stroke:#0B1220;stroke-width:0.9px;"/>
+        <path d="M74.5,151.501C74.749,151.929 75.562,151.773 75.81,152.201C76.129,152.753 75.305,154.239 75.217,154.399C74.485,155.719 74.504,155.707 74.054,157.13C73.254,159.661 72.801,160.143 70.419,166.468C66.707,175.57 64.716,181.78 64.09,183.317C61.172,190.476 61.169,190.794 59.388,191.254C53.41,192.798 52.439,194.162 52.437,192.499C52.437,192.207 54.608,187.677 55.133,186.376C58.801,177.282 66.182,161.799 67.211,158.392C68.252,154.945 68.994,155.392 74.5,151.501Z" style="fill:#3B4BC4;stroke:#0B1220;stroke-width:0.9px;"/>
+        <path d="M64.622,158.347C64.342,159.531 64.542,159.602 63.871,160.631C61.332,164.524 55.391,179.702 54.11,182.214C53.055,184.281 52.772,184.108 50.535,184.77C49.438,185.094 49.134,185.504 48.64,184.477C48.336,183.848 50.32,181.2 50.654,180.579C51.87,178.319 55.156,174.563 53.8,173.195C53.142,172.531 52.964,172.466 52.262,173.091C51.202,174.034 51.4,174.172 49.169,178.323C49.065,178.517 47.824,180.826 46.997,180.011C46.952,179.967 46.592,178.599 46.559,178.475C45.629,174.945 45.121,174.841 46.214,172.376C47.381,169.745 47.705,169.096 52.295,166.126C62.784,159.338 62.464,158.819 63.5,158.501C63.861,158.39 64.261,158.457 64.622,158.347Z" style="fill:#5B6BE0;stroke:#0B1220;stroke-width:0.9px;"/>
+        <path d="M34.447,193.476C36.615,189.609 37.326,187.517 37.487,187.48C38.556,187.233 39.058,189.69 40.148,192.601C41.491,196.19 40.122,196.437 35.962,205.706C32.431,213.574 32.562,213.625 32.252,214.307C30.52,218.114 29.915,213.582 29.889,213.381C29.743,212.291 29.705,212.307 28.645,207.475C27.795,203.602 29.3,203.816 34.447,193.476Z" style="fill:#FFD166;stroke:#0B1220;stroke-width:0.9px;"/>
+        <path d="M87.38,143.402C88.848,144.995 89.053,144.84 90.034,146.76C90.518,147.708 90.513,148.412 90.534,148.467C90.704,148.921 91.04,149.301 91.21,149.754C90.971,149.865 90.668,149.531 90.429,149.641C90.079,149.803 90.326,150.172 86.396,152.289C79.733,155.877 75.988,158.634 75.43,158.377C74.868,158.117 74.616,157.389 74.054,157.13C74.504,155.707 74.485,155.719 75.217,154.399C75.305,154.239 76.129,152.753 75.81,152.201C75.562,151.773 74.749,151.929 74.5,151.501C79.762,148.377 80.794,147.652 81.319,147.283C84.275,145.206 84.232,145.175 87.38,143.402Z" style="fill:#0B3B38;stroke:#0B1220;stroke-width:0.9px;"/>
+        <path d="M45.519,211.187C45.27,209.65 45.235,209.661 45.25,209.527C45.278,209.284 47.54,204.067 47.744,203.595C50.116,198.123 50.61,196.664 52.73,196C53.112,195.88 57.447,194.521 57.501,194.509C58.929,194.198 59.724,194.079 59.335,195.492C59.143,196.191 58.779,196.831 58.497,197.499C57.271,200.404 57.491,200.474 56.252,203.385C54.674,207.091 54.165,206.771 51.73,207.966C48.587,209.508 48.71,209.709 45.519,211.187Z" style="fill:#FF8A75;stroke:#0B1220;stroke-width:0.9px;"/>
+        <path d="M41.891,211.681C40.715,213.628 40.542,213.49 38.571,214.624C35.43,216.433 35.358,217.038 34.571,216.377C33.961,215.863 34.178,215.608 39.065,205.28C40.934,201.332 41.069,199.962 43.405,199.225C43.648,199.149 46.248,198.329 46.506,198.489C46.791,198.666 46.877,199.094 46.867,199.429C46.835,200.487 46.228,200.285 41.891,211.681Z" style="fill:#3B4BC4;stroke:#0B1220;stroke-width:0.9px;"/>
+        <path d="M42.862,177.944C43.7,180 46.7,183 45.198,186.38C43.372,190.005 43.625,190.128 43.398,190.396C42.444,191.519 42.017,190.857 41.587,189.456C40.422,185.67 39.482,184.733 40.941,181.758C41.888,179.827 41.933,179.867 42.862,177.944Z" style="fill:#5B6BE0;stroke:#0B1220;stroke-width:0.9px;"/>
+        <path d="M49.695,192.564C49.625,192.69 49.433,193.46 48.584,194.579C47.762,195.664 44.061,196.395 43.87,196.264C43.141,195.764 44.31,193.669 44.421,193.47C45.519,191.503 45.467,191.491 46.444,189.459C47.266,187.749 47.705,188.223 49.535,187.77C50.865,187.44 51.558,187.147 51.419,188.502C51.383,188.854 51.219,188.795 49.695,192.564Z" style="fill:#FFD166;stroke:#0B1220;stroke-width:0.9px;"/>
+    </g>
+</svg>
+<div class="splash-name" id="splashName">Aerie</div><div class="splash-tag">Wind · light · tide</div></div>
+<div class="wrap">
+  <header>
+    <div><h1>Aerie</h1><div class="sub">Pearland, TX · mornings 7 to 10 AM, evenings 3 PM to sunset</div></div>
+    <span class="mock">Mockup · real data, Nov 14</span>
+  </header>
+  <div id="home">
+    <div class="strip" id="strip"></div>
+    <div class="legend">Two dots per day: morning, then evening · a diamond marks the best open window · faded dates are shift days</div>
+    <div class="car" id="car" tabindex="0" aria-label="Mornings, swipe left and right"></div>
+  </div>
+  <div id="detail" hidden></div>
+  <details class="about">
+    <summary>About this mockup</summary>
+    <p><b>Real:</b> forecast (Open-Meteo, Pearland, mornings pulled Sat Nov 14 at 11:30 PM, evenings Sun Nov 15 at 1:30 AM), eBird notable reports for Nov 8 to 14, tide predictions (NOAA station 8771450, Galveston Pier 21), sunrise times, and PFD A shift days from your calendar (off at 6:00 AM).</p>
+    <p><b>Estimated:</b> first light and last light are set 25 minutes from sunrise and sunset; the build computes civil twilight properly.</p>
+    <p><b>Placeholder:</b> the spot list is a first candidate set, drive times are rough estimates from central Pearland, and the scoring weights are a first guess. Every spot uses the Pearland forecast.</p>
+    <p><b>Score:</b> starts at 100, loses points for sustained wind above 6 mph, gusts above 20 mph, rain chance, and heavy cloud. Tidal spots gain or lose for whether low tide lands in the morning.</p>
+    <p><button class="link" id="replay">Replay the splash</button></p>
+  </details>
+</div>
+<script>
+const D=[
+ ["Nov 15","Sun","6:45",1,["Cold front passing"],[[56.8,12,26.8,60,100,29],[55.6,15.3,33.6,66,100,43],[55.6,15.1,32.7,75,100,52],[56.5,13.6,30.4,78,100,40]],{t:"1:48 PM",ft:0.26,am:0}],
+ ["Nov 16","Mon","6:46",0,[],[[50.1,11.6,28.4,35,72,16],[51,11,26.2,39,100,20],[51.7,11.5,25.1,38,100,18],[53,11.1,24.2,43,100,14]],{t:"2:37 PM",ft:0.37,am:0}],
+ ["Nov 17","Tue","6:47",0,["First clear morning behind the front"],[[49.7,7.6,21.5,47,0,0],[52.2,8.1,20.6,53,0,0],[55.6,9.9,16.8,62,0,0],[59,9.2,14.8,67,0,0]],{t:"3:26 PM",ft:0.51,am:0}],
+ ["Nov 18","Wed","6:48",0,[],[[55.6,7.8,17.7,53,73,0],[58.1,7.8,19.7,59,100,0],[62.2,9.4,17.9,72,14,0],[65.7,8.8,14.8,83,100,0]],{t:"4:21 PM",ft:0.68,am:0}],
+ ["Nov 19","Thu","6:48",0,[],[[59.4,6.8,19.2,46,100,6],[61.4,7.9,18.8,55,100,6],[64.3,9.3,15.9,66,100,6],[67.2,9.3,14.1,75,100,6]],{t:"7:10 AM",ft:0.86,am:1}],
+ ["Nov 20","Fri","6:49",1,[],[[62.5,7.1,16.3,62,3,3],[64.9,8.1,17.9,74,4,3],[67.3,9.2,18.8,84,5,3],[69.8,10.3,18.6,94,5,3]],{t:"7:12 AM",ft:0.59,am:1}],
+ ["Nov 21","Sat","6:50",1,[],[[64.9,5.6,9.8,95,90,7],[67.3,6.7,11.6,88,92,7],[69.5,7.6,12.8,90,94,7],[71.7,8.4,13,99,96,7]],{t:"7:28 AM",ft:0.29,am:1}],
+ ["Nov 22","Sun","6:51",0,[],[[63.7,6.5,22.6,59,26,25],[65.2,7.2,22.1,60,47,25],[67.1,8,21.3,63,57,25],[69.5,8.6,19.5,69,44,25]],{t:"7:53 AM",ft:-0.02,am:1}],
+ ["Nov 23","Mon","6:52",0,[],[[60.5,7.6,17,45,100,8],[61.5,8.6,16.8,41,100,8],[62.9,9.4,16.1,40,99,8],[65,9.5,15,47,96,8]],{t:"8:26 AM",ft:-0.29,am:1}]
+];
+// [name, short, kind, minutes, tidal, note]
+const SPOTS=[["John Hargrove Environmental Complex","Hargrove","ponds and rookery islands",10,0,"Ducks, pelicans and waders close to the trail"],["Shadow Creek Ranch Nature Trail","Shadow Creek","wetland and prairie",15,0,"Winter ducks, bittern and sparrows from a paved loop"],["El Franco Lee Park","El Franco Lee","wetland ponds",15,0,"One of the most-reported Harris County hotspots"],["Brazos Bend State Park","Brazos Bend","inland lakes and marsh",40,0,"Waders, ducks and raptors at close range"],["Texas City Dike","Texas City Dike","open bay shoreline",40,1,"Gulls, terns, loons and shorebirds"],["Brazoria NWR","Brazoria NWR","coastal marsh and ponds",50,0,"Most-reported Brazoria County hotspot; winter waterfowl"],["San Luis Pass","San Luis Pass","tidal flats",60,1,"Shorebirds on the flats"],["Quintana Neotropical Bird Sanctuary","Quintana","migrant woodlot",65,0,"Best in April, May and fall; quiet in winter"]];
+const BIRDS=[["Allen's Hummingbird","Riverpark Nature Trails, Sugar Land",45,"Seen four days running, Nov 10 to 13. Not yet reviewed.","go","Lingering",null,4],["Dickcissel","Archbishop Fiorenza Park, Houston",45,"Seen Nov 9 and Nov 11. Not yet reviewed.","ok","Returning",null,2],["Great Kiskadee","57-Acre Park, Galveston Co.",30,"Confirmed report on Nov 12. One day so far.","ok","Confirmed",null,1],["Yellow-rumped Warbler (Audubon's)","F.M. Law Park",15,"Confirmed Nov 8, reported again Nov 12.","ok","Returning",null,2],["Wood Stork","Brazos Bend SP, 40-Acre Lake",40,"Two birds on Nov 13. Single report, not yet reviewed.","warn","Watch","Brazos Bend",1]];
+const HRS=["7","8","9","10 AM"],EHRS=["3","4","5 PM"];
+// Evening: sunset, hours 3-5 PM [tempF, wind, gust, dir, cloud%, rain%], low tide before sunset if any
+const E=[
+ {set:"5:25",h:[[64.5,11.2,26.4,75,100,65],[59.5,15,24.6,28,100,78],[56.2,17,31.1,42,100,73]],tide:{t:"1:48 PM",ft:0.26,am:1}},
+ {set:"5:25",h:[[59.9,8.8,16.1,39,23,5],[59.4,7.2,15.4,42,41,5],[57.9,4.4,13,40,100,5]],tide:{t:"2:37 PM",ft:0.37,am:1}},
+ {set:"5:24",h:[[66.2,7.8,9.8,87,0,0],[65.5,8.5,11.9,84,0,0],[62.6,5.6,11.2,90,0,0]],tide:{t:"3:26 PM",ft:0.51,am:1}},
+ {set:"5:24",h:[[71.3,9,10.1,104,100,3],[69.7,7.6,9.8,109,100,3],[66.8,6.7,12.5,120,100,3]],tide:{t:"4:21 PM",ft:0.68,am:1}},
+ {set:"5:24",h:[[72.4,9.7,13,98,100,8],[71.1,9.8,14.5,106,91,8],[67.9,8.1,14.8,114,78,8]],tide:{t:"5:29 PM",ft:0.87,am:1}},
+ {set:"5:23",h:[[72.1,11.8,13,112,90,6],[70.4,11,14.1,110,83,6],[68.3,9.8,15.9,106,63,6]],tide:{t:"6:51 PM",ft:1.06,am:0}},
+ {set:"5:23",h:[[74.9,9.4,8.9,112,87,21],[72.9,8.4,9.6,112,91,21],[70,7.2,11,112,97,21]],tide:{t:"8:09 PM",ft:1.23,am:0}},
+ {set:"5:23",h:[[74.8,9.5,12.3,98,99,19],[72.7,8.1,11,104,100,19],[69.8,6.4,9.2,115,100,19]],tide:{t:"9:21 PM",ft:1.38,am:0}},
+ {set:"5:23",h:[[67.2,8.2,15,55,100,10],[66.6,7.9,14.8,50,100,10],[65.9,7.8,14.1,44,100,10]],tide:{t:"none",ft:0,am:0}}
+];
+const $=id=>document.getElementById(id);
+const avg=a=>a.reduce((s,x)=>s+x,0)/a.length, comp=d=>["N","NE","E","SE","S","SW","W","NW"][Math.round(d/45)%8];
+const clamp=v=>Math.max(0,Math.min(100,Math.round(v))), ft=x=>(Math.round(x*10)/10||0).toFixed(1), cap=s=>s[0].toUpperCase()+s.slice(1);
+function stats(h){return{temp:h[0][0],wind:avg(h.map(x=>x[1])),gust:Math.max(...h.map(x=>x[2])),cloud:avg(h.map(x=>x[4])),rain:Math.max(...h.map(x=>x[5]))}}
+function score(s){return clamp(100-Math.max(0,s.wind-6)*5-Math.max(0,s.gust-20)*1.5-s.rain*0.6-(s.cloud>80?12:s.cloud>=30?6:0))}
+function tideAdj(t){return !t.am?-15:t.ft<=0.3?8:t.ft<=0.7?0:-8}
+function verdict(v){return v>=80?["go","Go"]:v>=65?["ok","Decent"]:v>=45?["warn","Marginal"]:["skip","Skip"]}
+const sky=c=>c>80?"overcast":c>=30?"mixed cloud":"clear";
+const conf=i=>i<3?"Forecast: sharp":i<7?"Forecast: rough":"Forecast: outlook only";
+function why(s,at="7"){const p=[s.wind<=9?"light wind":s.wind<=12?"moderate wind":"windy"];if(s.gust>25)p.push("gusts to "+Math.round(s.gust));p.push(sky(s.cloud));if(s.rain>=15)p.push(s.rain+"% rain chance");return cap(p.join(", "))+`, ${Math.round(s.temp)}°F at ${at}.`}
+const rows=D.map((d,i)=>{const s=stats(d[5]);return{i,id:d[0].toLowerCase().replace(" ","-"),date:d[0],wd:d[1],sun:d[2],shift:d[3],tags:d[4],h:d[5],tide:d[6],s,v:score(s),e:E[i],es:stats(E[i].h),ev:score(stats(E[i].h))}});
+const best=rows.filter(r=>!r.shift).reduce((a,b)=>Math.max(b.v,b.ev)>Math.max(a.v,a.ev)?b:a),bestPm=best.ev>best.v;
+let sel=best.i,radius=45;try{radius=+localStorage.getItem("radius")||45}catch(e){}
+const birdRank=(a,b)=>(/\(/.test(a[0])-/\(/.test(b[0]))||b[7]-a[7]||a[2]-b[2];
+function spotList(r){return SPOTS.map(sp=>{let v=r.v,note=sp[5];if(sp[4]){v=clamp(v+tideAdj(r.tide));note+=r.tide.am?`; low tide ${r.tide.t} at ${ft(r.tide.ft)} ft${r.tide.ft<=0.3?", flats exposed in good light":r.tide.ft>0.7?", but a weak low":""}`:`; water still high at dawn, low not until ${r.tide.t}`}const bird=r.i<4?BIRDS.find(b=>b[6]===sp[1]):null;return{sp,v,note,inr:sp[3]<=radius,bird,jump:!!bird&&bird[4]!=="warn"}}).concat(r.i<4?BIRDS.filter(b=>!b[6]&&b[4]!=="warn").sort(birdRank).slice(0,2).map((b,k)=>({ord:k,sp:[b[1],b[1],"temporary, while the bird keeps being reported",b[2],0,""],v:r.v,note:b[3].replace(/\.$/,""),inr:b[2]<=radius,bird:b,jump:true})):[]).sort((a,b)=>(b.jump-a.jump)||(a.ord??9)-(b.ord??9)||a.sp[3]-b.sp[3])}
+const bestBet=r=>spotList(r).filter(x=>x.inr).sort((a,b)=>b.v-a.v||a.sp[3]-b.sp[3])[0];
+const birdsIn=()=>BIRDS.filter(b=>b[2]<=radius);
+const addMin=(t,m)=>{let[h,mi]=t.split(":").map(Number);mi+=m;while(mi<0){mi+=60;h--}while(mi>59){mi-=60;h++}return h+":"+String(mi).padStart(2,"0")};
+const win=(name,times,c,l,v)=>`<div class="win"><div><b>${name}</b><span>${times.replace(/ [AP]M$/,"")}</span></div><span class="pill ${c}">${l} ${v}</span></div>`;
+function hours(r,full,h=r.h,lab=HRS){const row=(l,f)=>`<tr><td>${l}</td>${h.map(x=>`<td>${f(x)}</td>`).join("")}</tr>`;
+  return `<table class="hrs"><thead><tr><th></th>${lab.map(q=>`<th>${q}</th>`).join("")}</tr></thead><tbody>${row("Temp",x=>Math.round(x[0])+"°")}${row("Wind",x=>comp(x[3])+" "+Math.round(x[1]))}${full?row("Gust",x=>Math.round(x[2])):""}${row("Cloud",x=>x[4]+"%")}${row("Rain",x=>x[5]+"%")}</tbody></table>`}
+const tagHtml=r=>r.tags.length?`<div class="tags">${r.tags.map(t=>`<span class="tag${/front/i.test(t)?" front":""}">${t}</span>`).join("")}</div>`:"";
+function drawStrip(){$("strip").innerHTML=rows.map(r=>{const c=verdict(r.v)[0];return `<button class="chip${r.shift?" shift":""}${r.i===best.i?" best":""}" data-i="${r.i}" aria-pressed="${r.i===sel}" aria-label="${r.wd} ${r.date}, morning ${verdict(r.v)[1]}, evening ${verdict(r.ev)[1]}${r.shift?", on shift":""}"><span class="wd">${r.wd}</span><span class="dn">${r.date.slice(4)}</span><span class="dots"><i class="dot b-${c}${r.i===best.i&&!bestPm?" dia":""}"></i><i class="dot b-${verdict(r.ev)[0]}${r.i===best.i&&bestPm?" dia":""}"></i></span></button>`}).join("")}
+function drawCards(){$("car").innerHTML=rows.map(r=>{const[c,l]=verdict(r.v),[ec,el]=verdict(r.ev),bb=bestBet(r),nb=birdsIn().length;
+  return `<article class="card v-${c}${r.shift?" shift":""}" data-i="${r.i}" tabindex="0">
+  <div class="date">${r.wd} ${r.date}</div>${win("Morning",`first light ${addMin(r.sun,-25)} · sunrise ${r.sun} AM`,c,l,r.v)}
+  <p class="why">${why(r.s)}</p>${tagHtml(r)}${hours(r,0)}
+  ${win("Evening",`sunset ${r.e.set} · last light ${addMin(r.e.set,25)} PM`,ec,el,r.ev)}
+  <dl class="kv"><dt>Low tide</dt><dd>${r.tide.t} · ${ft(r.tide.ft)} ft</dd>${r.shift?"":`<dt>Best bet</dt><dd>${bb?`${bb.sp[1]} · ${verdict(bb.v)[1]} ${bb.v}`:"No spots in range"}</dd>`}${r.i<4&&nb?`<dt>Unusual</dt><dd>${nb} bird${nb>1?"s":""} reported in range</dd>`:""}</dl>
+  <div class="foot"><span class="conf">${conf(r.i)}</span><button class="more">Details ›</button></div></article>`}).join("")}
+function center(smooth){const el=$("car").children[sel];if(el)$("car").scrollTo({left:el.offsetLeft-($("car").clientWidth-el.offsetWidth)/2,behavior:smooth?"smooth":"auto"})}
+function drawDetail(r){const[c,l]=verdict(r.v),[ec,el]=verdict(r.ev),list=spotList(r),out=list.filter(x=>!x.inr).length,bl=BIRDS;
+  $("detail").innerHTML=`<button class="back">‹ All mornings</button>
+  <div class="dhead v-${c}"><div class="date">${r.wd} ${r.date}<small>${conf(r.i)}</small></div>${win("Morning",`first light ${addMin(r.sun,-25)} · sunrise ${r.sun} AM`,c,l,r.v)}
+  <p class="why">${why(r.s)}</p>${tagHtml(r)}${hours(r,1)}
+  <dl class="kv"><dt>Low tide</dt><dd>${r.tide.t} · ${ft(r.tide.ft)} ft${r.tide.am?"":" (water high at dawn)"}</dd></dl></div>
+  <section class="panel">${win("Evening",`sunset ${r.e.set} · last light ${addMin(r.e.set,25)} PM`,ec,el,r.ev)}<p class="why" style="margin:10px 0">${why(r.es,"3 PM")}</p>${hours(r,1,r.e.h,EHRS)}<dl class="kv" style="margin-top:10px"><dt>Tidal spots</dt><dd>${r.e.tide.am?`low tide ${r.e.tide.t} at ${ft(r.e.tide.ft)} ft`:"no low tide before sunset"}</dd></dl></section>
+  <section class="panel"><h2>Where to go</h2><div class="sub" style="margin-bottom:6px">Scores here are for the morning.</div>
+  <div class="set"><label for="radius">Max drive</label><input type="range" id="radius" min="10" max="90" step="5" value="${radius}"><output for="radius">${radius} min</output></div>
+  <div class="spots">${list.map(x=>{const[vc,vl]=verdict(x.v);return `<div class="spot${x.inr?"":" far"}"><div class="n">${x.sp[0]}<small>${x.sp[2]} · ~${x.sp[3]} min</small></div><div class="note">${x.bird?`<span class="tag${x.jump?" front":""}">${x.bird[0]} ${x.jump?"reported":"reported once"}</span> `:""}${x.note}.</div><span class="pill ${vc}">${vl} ${x.v}</span></div>`}).join("")||'<div class="sub">No spots within this drive time.</div>'}</div>
+  ${out?`<div class="sub" style="margin-top:6px">${out} faded spot${out>1?"s are":" is"} beyond ${radius} min</div>`:""}</section>
+  <section class="panel"><h2>Unusual birds in range</h2>
+  <div class="spots">${bl.map(b=>`<div class="spot${b[2]<=radius?"":" far"}"><div class="n">${b[0]}<small>${b[1]} · ~${b[2]} min</small></div><div class="note">${b[3]}</div><span class="pill ${b[4]}">${b[5]}</span></div>`).join("")||'<div class="sub">Nothing within this drive time.</div>'}</div>
+  <div class="sub" style="margin-top:6px">From 44 eBird reports, Nov 8 to 14.${r.i>3?" By this morning these will be a week old; treat them as stale.":""}</div></section>`}
+function route(){const r=rows.find(x=>x.id===location.hash.slice(1));
+  if(r){sel=r.i;drawDetail(r);$("home").hidden=true;$("detail").hidden=false;window.scrollTo(0,0)}
+  else{$("detail").hidden=true;$("home").hidden=false;drawStrip();drawCards();requestAnimationFrame(()=>center(false))}}
+$("strip").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){sel=+b.dataset.i;drawStrip();center(true)}});
+let tick=0;$("car").addEventListener("scroll",()=>{if(tick)return;tick=requestAnimationFrame(()=>{tick=0;const c=$("car"),mid=c.scrollLeft+c.clientWidth/2;let bi=0,bd=1e9;[...c.children].forEach((el,i)=>{const d=Math.abs(el.offsetLeft+el.offsetWidth/2-mid);if(d<bd){bd=d;bi=i}});if(bi!==sel){sel=bi;drawStrip()}})});
+const openCard=el=>{location.hash=rows[+el.dataset.i].id};
+$("car").addEventListener("click",e=>{const el=e.target.closest(".card");if(el)openCard(el)});
+$("car").addEventListener("keydown",e=>{const el=e.target.closest(".card");if(el&&e.key==="Enter")openCard(el)});
+$("detail").addEventListener("click",e=>{if(e.target.closest(".back"))location.hash=""});
+$("detail").addEventListener("input",e=>{if(e.target.id==="radius"){radius=+e.target.value;try{localStorage.setItem("radius",radius)}catch(x){}drawDetail(rows[sel]);$("radius").focus()}});
+window.addEventListener("hashchange",route);route();
+const sp=$("splash");let spT;const spHide=()=>{sp.classList.add("out");setTimeout(()=>{sp.hidden=true},450)};
+spT=setTimeout(spHide,1900);sp.addEventListener("click",()=>{clearTimeout(spT);spHide()});sp.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "||e.key==="Escape"){clearTimeout(spT);spHide()}});
+$("replay").addEventListener("click",()=>{sp.hidden=false;sp.classList.remove("out");clearTimeout(spT);spT=setTimeout(spHide,2600)});
+</script>
