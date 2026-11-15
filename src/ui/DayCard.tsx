@@ -72,6 +72,11 @@ export function birdCount(model: Model, day: DayScore): number | null {
   return model.birds.filter((b) => b.driveMin <= model.settings.maxDrive).length;
 }
 
+export function Tags({ tags }: { tags?: string[] }) {
+  if (!tags?.length) return null;
+  return <div className="tags">{tags.map((t) => <span key={t} className="tag front">{t}</span>)}</div>;
+}
+
 export const shortName = (name: string) => name.replace(/ (Nature Center|State Park|Neotropical Bird Sanctuary)$/, '');
 
 export function DayCard({ day, model, onOpen }: { day: DayScore; model: Model; onOpen: () => void }) {
@@ -86,6 +91,7 @@ export function DayCard({ day, model, onOpen }: { day: DayScore; model: Model; o
       <div className="date">{weekday(day.date)} {monthDay(day.date)}</div>
       <Window name="Morning" score={day.morning} times={t.morning} />
       <p className="why">{reason(am, '7')}</p>
+      <Tags tags={model.tags[day.date]} />
       {am.length > 0 && <HourTable hours={am} />}
       <Window name="Evening" score={day.evening} times={t.evening} />
       <dl className="kv">

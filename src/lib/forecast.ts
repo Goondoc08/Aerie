@@ -9,6 +9,7 @@ export function forecastUrl(lat: number, lng: number): string {
     hourly: FIELDS.join(','), daily: 'sunrise,sunset',
     temperature_unit: 'fahrenheit', wind_speed_unit: 'mph',
     timezone: TIMEZONE, forecast_days: '10',
+    past_days: '1', // yesterday too, so a front that passed overnight still tags this morning
   });
   return `https://api.open-meteo.com/v1/forecast?${q}`;
 }

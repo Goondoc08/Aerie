@@ -4,6 +4,7 @@ import { db, type CacheRow } from './lib/db';
 import { analyseBirds, refreshBirds, type BirdGroup, type Report } from './lib/birds';
 import { ago, dayId, nowIn, todayIn } from './lib/dates';
 import { refreshForecast } from './lib/forecast';
+import { frontTags } from './lib/fronts';
 import { bestOpenWindow, parseForecast, scoreWeek } from './lib/scoring';
 import { loadSettings, saveSettings, type Settings } from './lib/settings';
 import type { Spot } from './lib/spots';
@@ -120,6 +121,7 @@ export default function App() {
   const f = useMemo(() => (forecast ? parseForecast(forecast.data) : null), [forecast]);
   const week = useMemo(() => (f && settings ? scoreWeek(f, today, DAYS_SHOWN, settings.shiftAnchor) : []), [f, today, settings?.shiftAnchor]);
   const best = useMemo(() => bestOpenWindow(week), [week]);
+  const tags = useMemo(() => (f ? frontTags(f) : {}), [f]);
   const tides = useMemo<TideMap>(() => {
     const m: TideMap = {};
     for (const [k, r] of Object.entries(rows)) if (k.startsWith('tides:')) m[k.slice(6)] = parseTides(r.data);
@@ -159,7 +161,7 @@ export default function App() {
   useEffect(() => { if (!detailDay) fromHome.current = false; }, [detailDay]);
   useEffect(() => { if (detailDay) setFocus(detailDay.date); }, [detailDay]);
 
-  const model: Model = { settings: settings!, forecast: f, week, best, spots, tides, today, birds, birdRow };
+  const model: Model = { settings: settings!, forecast: f, week, best, spots, tides, today, birds, birdRow, tags };
 
   return (
     <>
@@ -193,4 +195,6 @@ export type Model = {
   /** Sightings that passed the filter, or null when there is no key or no data yet. */
   birds: BirdGroup[] | null;
   birdRow: CacheRow | null;
+  /** Cold front tags by date. */
+  tags: Record<string, string[]>;
 };

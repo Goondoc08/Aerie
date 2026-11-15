@@ -6,7 +6,9 @@ import { clock12, daysBetween, hourOf, monthDay, weekday } from '../lib/dates';
 import { eveningHours, lowTideInWindow, morningHours, reason, type DayScore, type TidePoint } from '../lib/scoring';
 import { feet } from '../lib/tides';
 import type { SpotRow, SpotWindow } from '../lib/where';
-import { dayTimes, HourTable, lowTideText, spotRows, Window } from './DayCard';
+import { BIRDCAST } from '../lib/config';
+import { migrationSeason } from '../lib/fronts';
+import { dayTimes, HourTable, lowTideText, spotRows, Tags, Window } from './DayCard';
 import { verdictClass, verdictText } from './Home';
 
 interface Props { model: Model; day: DayScore; onBack: () => void; onMaxDrive: (min: number) => void }
@@ -35,6 +37,7 @@ export function Detail({ model, day, onBack, onMaxDrive }: Props) {
   const maxDrive = model.settings.maxDrive;
   const list = spotRows(model, day);
   const far = list.filter((r) => !r.inRange).length;
+  const season = migrationSeason(day.date);
   const pmLabel = pm.length ? `${hourOf(pm[0].time) % 12 || 12} PM` : '';
 
   return (
@@ -45,10 +48,12 @@ export function Detail({ model, day, onBack, onMaxDrive }: Props) {
         <div className="date">{weekday(day.date)} {monthDay(day.date)}<small>Forecast: {day.confidence}</small></div>
         <Window name="Morning" score={day.morning} times={t.morning} />
         <p className="why">{reason(am, '7')}</p>
+        <Tags tags={model.tags[day.date]} />
         {am.length > 0 && <HourTable hours={am} gusts />}
         <dl className="kv">
           <dt>Low tide</dt><dd>{lowTideText(model, day.date)}</dd>
           {tides && <><dt>Tidal spots</dt><dd>{amLow ? `low ${lowText(amLow)}, 5 to 11 AM` : 'no low tide 5 to 11 AM'}</dd></>}
+          {season && <><dt>{season} migration</dt><dd><a className="link" href={BIRDCAST.url} target="_blank" rel="noreferrer">BirdCast forecast ›</a></dd></>}
         </dl>
       </section>
 

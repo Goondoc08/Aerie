@@ -69,3 +69,31 @@ export const BIRDS = {
 };
 
 export const REFRESH_HOURS = { forecast: 3, tides: 24, birds: 6, staleBanner: 6 };
+
+// Cold front rule (phase 4). A day is tagged "Cold front passing" when all three hold:
+// its highest rain chance reaches rainAtLeast, its highest gust reaches gustAtLeast, and the wind
+// swings into the north arc (northFrom through 0 to northTo degrees) from outside it, turning by at
+// least minSwing degrees. The hours compared run from noon the day before to the end of the day.
+// "First clear morning behind the front" is the first morning within lookAheadDays after a front
+// day whose 7-10 AM window averages at most clearMaxWind mph and under clearMaxCloud % cloud, with
+// rain chance under clearMaxRain %.
+export const FRONT = {
+  rainAtLeast: 40,
+  gustAtLeast: 25,
+  northFrom: 300,
+  northTo: 50,
+  minSwing: 30,
+  lookAheadDays: 3,
+  clearMaxWind: 10,
+  clearMaxCloud: 30,
+  clearMaxRain: 15,
+};
+
+// BirdCast link, shown in spring and fall migration (month-day ranges, inclusive).
+export const BIRDCAST = {
+  url: 'https://dashboard.birdcast.org/region/US-TX-039', // Brazoria County nightly migration dashboard
+  seasons: [
+    { name: 'Spring', from: '03-01', to: '06-15' },
+    { name: 'Fall', from: '08-01', to: '11-15' },
+  ],
+};
