@@ -10,6 +10,8 @@ const tides: TidePoint[] = parseTides({
   predictions: fixtures.tides_station_8771450_MLLW_ft_local.map((p) => ({ t: p.t, v: String(p.ft), type: p.type })),
 });
 const map: TideMap = { '8771450': tides };
+// The fixture holds Galveston Pier 21 tides only, so point both tidal spots at that station here.
+const SPOTS = SEED_SPOTS.map((s) => (s.tidal ? { ...s, stationId: '8771450' } : s));
 
 function fixtureForecast(): Forecast {
   const hours: Hour[] = [];
@@ -25,7 +27,7 @@ const f = fixtureForecast();
 const week = scoreWeek(f, '2026-11-15', 9);
 const rows = (date: string, maxDrive = 45, t: TideMap = map) => {
   const day = week.find((d) => d.date === date)!;
-  return rankSpots(SEED_SPOTS, day, f.days.find((d) => d.date === date)!.sunset, t, maxDrive);
+  return rankSpots(SPOTS, day, f.days.find((d) => d.date === date)!.sunset, t, maxDrive);
 };
 const spot = (date: string, name: string, maxDrive = 45) => rows(date, maxDrive).find((r) => r.spot.name === name)!;
 const scores = (date: string, name: string) => {

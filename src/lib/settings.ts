@@ -1,4 +1,4 @@
-import { DRIVE, HOME_DEFAULT, SHIFT } from './config';
+import { DRIVE, HOME_DEFAULT, SCORING, SHIFT, type Weights } from './config';
 import { db } from './db';
 
 export interface Settings {
@@ -9,6 +9,8 @@ export interface Settings {
   maxDrive: number;
   /** Kept only on this device; sent only to eBird. */
   ebirdKey: string;
+  /** Score weights changed in Settings; anything missing uses config.ts. */
+  weights: Partial<Weights>;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -18,7 +20,10 @@ export const DEFAULT_SETTINGS: Settings = {
   shiftAnchor: SHIFT.anchorDate,
   maxDrive: DRIVE.default,
   ebirdKey: '',
+  weights: {},
 };
+
+export const weightsOf = (s: Settings): Weights => ({ ...SCORING, ...s.weights });
 
 export async function loadSettings(): Promise<Settings> {
   const rows = await db.settings.toArray();

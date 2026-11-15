@@ -2,7 +2,8 @@ import type { Model } from '../App';
 import { TIDE, TIMEZONE } from '../lib/config';
 import { birdsApply } from '../lib/birds';
 import { clock12, daysBetween, hourOf, monthDay, shortClock, weekday } from '../lib/dates';
-import { compass, morningHours, reason, type DayScore, type Hour } from '../lib/scoring';
+import { pointKey } from '../lib/forecast';
+import { compass, dayWindows, morningHours, reason, type DayScore, type Hour } from '../lib/scoring';
 import { dayLow, feet } from '../lib/tides';
 import { clock, sunTimes } from '../lib/twilight';
 import { bestBet, rankSpots } from '../lib/where';
@@ -63,7 +64,11 @@ export const lowTideText = (model: Model, date: string) => {
 export function spotRows(model: Model, day: DayScore) {
   const sun = model.forecast!.days.find((d) => d.date === day.date)!;
   const birds = model.birds && birdsApply(daysBetween(model.today, day.date)) ? model.birds : undefined;
-  return rankSpots(model.spots, day, sun.sunset, model.tides, model.settings.maxDrive, { birds });
+  const base = (spot: { lat: number; lng: number }) => {
+    const f = model.spotForecasts.get(pointKey(spot));
+    return f ? dayWindows(f, day.date, model.weights) : null;
+  };
+  return rankSpots(model.spots, day, sun.sunset, model.tides, model.settings.maxDrive, { birds, base });
 }
 
 /** Unusual birds in range, for the next four days only; null on other days or with no sightings data. */
@@ -90,7 +95,7 @@ export function DayCard({ day, model, onOpen }: { day: DayScore; model: Model; o
       onClick={onOpen} onKeyDown={(e) => { if (e.key === 'Enter') onOpen(); }}>
       <div className="date">{weekday(day.date)} {monthDay(day.date)}</div>
       <Window name="Morning" score={day.morning} times={t.morning} />
-      <p className="why">{reason(am, '7')}</p>
+      <p className="why">{reason(am, '7', model.weights)}</p>
       <Tags tags={model.tags[day.date]} />
       {am.length > 0 && <HourTable hours={am} />}
       <Window name="Evening" score={day.evening} times={t.evening} />

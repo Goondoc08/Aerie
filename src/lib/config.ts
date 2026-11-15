@@ -23,6 +23,8 @@ export const SCORING = {
   cloudPartPenalty: 6,
 };
 
+export type Weights = { -readonly [K in keyof typeof SCORING]: number };
+
 export const VERDICTS = [
   { min: 80, word: 'Go' },
   { min: 65, word: 'Decent' },

@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import type { Sources } from '../App';
-import { DRIVE } from '../lib/config';
+import { DRIVE, SCORING, type Weights } from '../lib/config';
 import { db, type CacheRow } from '../lib/db';
 import { ago } from '../lib/dates';
 import type { Settings } from '../lib/settings';
 import type { Spot } from '../lib/spots';
+import { SPOT_FORECASTS } from '../lib/forecast';
+import { HOTSPOTS, rankHotspots, type Suggestion } from '../lib/hotspots';
+import { loadStations, nearestStations } from '../lib/stations';
 import { tideKey } from '../lib/tides';
 
 interface Props {
@@ -22,6 +25,13 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
   const [drive, setDrive] = useState(String(settings.maxDrive));
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [editing, setEditing] = useState<number | 'new' | null>(null);
+  const [draft, setDraft] = useState<Spot | undefined>(undefined);
+  const hotRow = rows[HOTSPOTS];
+  const suggestions = hotRow ? rankHotspots(hotRow.data as any, settings, spots) : null;
+  const addSuggestion = (h: Suggestion) => {
+    setDraft({ name: h.name, type: 'eBird hotspot', lat: h.lat, lng: h.lng, driveMin: h.driveMin, tidal: false });
+    setEditing('new');
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -38,6 +48,7 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
   const sorted = [...spots].sort((a, b) => a.driveMin - b.driveMin || a.name.localeCompare(b.name));
   const sources = [
     { key: 'forecast', label: 'Forecast · Open-Meteo' },
+    { key: SPOT_FORECASTS, label: 'Spot forecasts · Open-Meteo' },
     ...stations.map((st) => ({ key: tideKey(st), label: `Tides · NOAA station ${st}` })),
     ...(settings.ebirdKey ? [{ key: 'birds', label: 'Sightings · eBird notable' }] : []),
   ];
@@ -91,12 +102,40 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
               </div>
             </div>
           ))}
-          {editing === 'new' && <SpotForm onDone={async () => { setEditing(null); await onSpotsChanged(); }} />}
+          {editing === 'new' && <SpotForm key={draft?.name ?? 'new'} spot={draft} isNew onDone={async () => { setEditing(null); setDraft(undefined); await onSpotsChanged(); }} />}
         </div>
         {editing !== 'new' && (
-          <div className="actions"><button className="btn" type="button" onClick={() => setEditing('new')}>Add a spot</button></div>
+          <div className="actions"><button className="btn" type="button" onClick={() => { setDraft(undefined); setEditing('new'); }}>Add a spot</button></div>
         )}
       </section>
+
+      <section className="panel form">
+        <h2>Hotspot suggestions</h2>
+        {!settings.ebirdKey ? <div className="sub">Add your eBird key below to get suggestions.</div> : <>
+          <div className="sub">eBird hotspots within 50 km with sightings this week, busiest first: most of their county's 200 latest checklists, then most species. Drive times are straight-line estimates; correct them after adding.</div>
+          <div className="actions">
+            <button className="btn" type="button" disabled={status[HOTSPOTS]?.busy} onClick={() => onRefresh(HOTSPOTS)}>
+              {status[HOTSPOTS]?.busy ? 'Looking…' : suggestions ? 'Refresh suggestions' : 'Suggest hotspots'}
+            </button>
+            {hotRow && <span className="sub">updated {ago(hotRow.fetchedAt)}</span>}
+            {status[HOTSPOTS]?.failed && <span className="err">{status[HOTSPOTS]?.error ?? 'Could not load suggestions'}</span>}
+          </div>
+          {suggestions && (
+            <div className="spots">
+              {suggestions.length === 0 && <div className="sub">No new hotspots found.</div>}
+              {suggestions.map((h) => (
+                <div key={h.locId} className="spot">
+                  <div className="n">{h.name}<small>~{h.driveMin} min · {h.checklists} recent checklist{h.checklists === 1 ? '' : 's'}{h.species ? ` · ${h.species} species all time` : ''}</small></div>
+                  <div className="actions"><button className="btn" type="button" onClick={() => addSuggestion(h)}>Add</button></div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="sub">Data: <a className="link" href="https://ebird.org" target="_blank" rel="noreferrer">eBird.org</a></div>
+        </>}
+      </section>
+
+      <WeightsForm current={settings.weights} onSave={(weights) => onSave({ weights })} />
 
       <KeyForm current={settings.ebirdKey} onSave={(ebirdKey) => onSave({ ebirdKey })} />
 
@@ -124,13 +163,23 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
 
 const BLANK: Spot = { name: '', type: '', lat: 0, lng: 0, driveMin: 30, tidal: false, stationId: '' };
 
-function SpotForm({ spot, onDone }: { spot?: Spot; onDone: () => Promise<void> }) {
+function SpotForm({ spot, isNew, onDone }: { spot?: Spot; isNew?: boolean; onDone: () => Promise<void> }) {
   const s = spot ?? BLANK;
   const [v, setV] = useState({
     name: s.name, type: s.type, lat: spot ? String(s.lat) : '', lng: spot ? String(s.lng) : '',
     drive: String(s.driveMin), tidal: s.tidal, station: s.stationId ?? '',
   });
   const [err, setErr] = useState('');
+  const [near, setNear] = useState('');
+  const findStation = async () => {
+    if (!inRange(v.lat, -90, 90) || !inRange(v.lng, -180, 180)) return setNear('Enter the coordinates first.');
+    setNear('Looking…');
+    try {
+      const [n] = nearestStations(await loadStations(), Number(v.lat), Number(v.lng), 1);
+      setV((cur) => ({ ...cur, station: n.id }));
+      setNear(`${n.name}, ${n.km.toFixed(1)} km away`);
+    } catch { setNear('Could not reach NOAA.'); }
+  };
   const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setV({ ...v, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
 
@@ -139,19 +188,19 @@ function SpotForm({ spot, onDone }: { spot?: Spot; onDone: () => Promise<void> }
     if (!v.name.trim()) return setErr('Give the spot a name.');
     if (!inRange(v.lat, -90, 90) || !inRange(v.lng, -180, 180)) return setErr('Latitude and longitude must be numbers.');
     if (!inRange(v.drive, 1, 600)) return setErr('Drive time must be a number of minutes.');
-    if (v.tidal && !/^\d{7}$/.test(v.station.trim())) return setErr('A tidal spot needs a 7-digit NOAA station id.');
+    if (v.tidal && !/^[A-Za-z0-9]{5,10}$/.test(v.station.trim())) return setErr('A tidal spot needs a NOAA station id, e.g. 8771450.');
     const next: Spot = {
       name: v.name.trim(), type: v.type.trim(), lat: Number(v.lat), lng: Number(v.lng),
       driveMin: Math.round(Number(v.drive)), tidal: v.tidal, stationId: v.tidal ? v.station.trim() : undefined,
     };
-    if (spot?.id != null) await db.spots.put({ ...next, id: spot.id });
+    if (spot?.id != null && !isNew) await db.spots.put({ ...next, id: spot.id });
     else await db.spots.add(next);
     await onDone();
   };
 
   return (
     <form className="spot-form form" onSubmit={save}>
-      <label className="field">Name<input className="text" value={v.name} onChange={set('name')} /></label>
+      <label className="field">Name<input className="text" value={v.name} onChange={set('name')} autoFocus={isNew} /></label>
       <label className="field">Type<input className="text" value={v.type} onChange={set('type')} placeholder="e.g. Tidal flats" /></label>
       <div className="row2">
         <label className="field">Latitude<input inputMode="decimal" value={v.lat} onChange={set('lat')} /></label>
@@ -162,8 +211,14 @@ function SpotForm({ spot, onDone }: { spot?: Spot; onDone: () => Promise<void> }
         <label className="field">NOAA station<input inputMode="numeric" value={v.station} onChange={set('station')} disabled={!v.tidal} placeholder="8771450" /></label>
       </div>
       <label className="check"><input type="checkbox" checked={v.tidal} onChange={set('tidal')} /> Tidal spot (score uses low tide)</label>
+      {v.tidal && (
+        <div className="actions">
+          <button className="btn" type="button" onClick={findStation}>Use nearest NOAA station</button>
+          {near && <span className="sub">{near}</span>}
+        </div>
+      )}
       <div className="actions">
-        <button className="btn solid" type="submit">{spot ? 'Save spot' : 'Add spot'}</button>
+        <button className="btn solid" type="submit">{spot && !isNew ? 'Save spot' : 'Add spot'}</button>
         <button className="btn" type="button" onClick={() => onDone()}>Cancel</button>
         {err && <span className="err" role="status">{err}</span>}
       </div>
@@ -198,6 +253,59 @@ function KeyForm({ current, onSave }: { current: string; onSave: (key: string) =
         <button className="btn solid" type="submit">Save key</button>
         {current && <button className="btn" type="button" onClick={async () => { setKey(''); await onSave(''); setMsg('Key removed'); }}>Remove key</button>}
         {msg && <span className="sub" role="status">{msg}</span>}
+      </div>
+    </form>
+  );
+}
+
+const WEIGHT_FIELDS: { key: keyof Weights; label: string }[] = [
+  { key: 'windFreeMph', label: 'Wind allowed, mph' },
+  { key: 'windPerMph', label: 'Points per mph over' },
+  { key: 'gustFreeMph', label: 'Gusts allowed, mph' },
+  { key: 'gustPerMph', label: 'Points per gust mph over' },
+  { key: 'rainPerPercent', label: 'Points per % rain chance' },
+  { key: 'cloudHeavyAbove', label: 'Heavy cloud above, %' },
+  { key: 'cloudHeavyPenalty', label: 'Heavy cloud points' },
+  { key: 'cloudPartFrom', label: 'Part cloud from, %' },
+  { key: 'cloudPartPenalty', label: 'Part cloud points' },
+];
+
+/** Score weights. Values equal to config.ts are not stored, so later default changes still apply. */
+function WeightsForm({ current, onSave }: { current: Partial<Weights>; onSave: (w: Partial<Weights>) => Promise<void> }) {
+  const [v, setV] = useState<Record<string, string>>(() =>
+    Object.fromEntries(WEIGHT_FIELDS.map(({ key }) => [key, String(current[key] ?? SCORING[key])])));
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const save = async (e: FormEvent) => {
+    e.preventDefault();
+    const out: Partial<Weights> = {};
+    for (const { key, label } of WEIGHT_FIELDS) {
+      const n = Number(v[key]);
+      if (!v[key].trim() || !Number.isFinite(n) || n < 0 || n > 200) return setMsg({ ok: false, text: `${label} must be a number from 0 to 200.` });
+      if (n !== SCORING[key]) out[key] = n;
+    }
+    await onSave(out);
+    setMsg({ ok: true, text: Object.keys(out).length ? 'Saved; scores updated' : 'Saved; using the defaults' });
+  };
+  const reset = async () => {
+    setV(Object.fromEntries(WEIGHT_FIELDS.map(({ key }) => [key, String(SCORING[key])])));
+    await onSave({});
+    setMsg({ ok: true, text: 'Back to the defaults' });
+  };
+  return (
+    <form className="panel form" onSubmit={save}>
+      <h2>Scoring</h2>
+      <div className="sub">Each window starts at {SCORING.start} and loses points for wind, gusts, rain chance and cloud.</div>
+      <div className="row2">
+        {WEIGHT_FIELDS.map(({ key, label }) => (
+          <label key={key} className="field" htmlFor={`w-${key}`}>{label}
+            <input id={`w-${key}`} inputMode="decimal" value={v[key]} onChange={(e) => setV({ ...v, [key]: e.target.value })} />
+          </label>
+        ))}
+      </div>
+      <div className="actions">
+        <button className="btn solid" type="submit">Save weights</button>
+        <button className="btn" type="button" onClick={reset}>Reset to defaults</button>
+        {msg && <span className={msg.ok ? 'sub' : 'err'} role="status">{msg.text}</span>}
       </div>
     </form>
   );

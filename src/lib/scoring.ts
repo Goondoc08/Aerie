@@ -1,4 +1,4 @@
-import { CONFIDENCE, SCORING, TIDE, VERDICTS, WINDOWS, type VerdictWord } from './config';
+import { CONFIDENCE, SCORING, TIDE, VERDICTS, WINDOWS, type VerdictWord, type Weights } from './config';
 import { dayOf, daysBetween, hourOf, minutesOf } from './dates';
 import { isShiftDay } from './shifts';
 
@@ -52,10 +52,9 @@ export function eveningHours(f: Forecast, date: string, sunset: string): Hour[] 
 const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 
 /** The one scoring rule, used for both windows. Returns null when there is no data. */
-export function scoreWindow(hours: Hour[]): number | null {
+export function scoreWindow(hours: Hour[], S: Weights = SCORING): number | null {
   const ok = hours.filter((h) => [h.wind, h.gust, h.cloud, h.rain].every((v) => v != null));
   if (ok.length === 0) return null;
-  const S = SCORING;
   const wind = avg(ok.map((h) => h.wind));
   const gust = Math.max(...ok.map((h) => h.gust));
   const rain = Math.max(...ok.map((h) => h.rain));
@@ -114,17 +113,24 @@ export interface DayScore {
 }
 
 /** Up to `count` days starting at `today`; older cached days are dropped. */
-export function scoreWeek(f: Forecast, today: string, count: number, anchorDate?: string): DayScore[] {
+export function scoreWeek(f: Forecast, today: string, count: number, anchorDate?: string, w: Weights = SCORING): DayScore[] {
   return f.days
     .filter((d) => d.date >= today)
     .slice(0, count)
     .map((d) => ({
       date: d.date,
       shift: isShiftDay(d.date, anchorDate),
-      morning: scoreWindow(morningHours(f, d.date)),
-      evening: scoreWindow(eveningHours(f, d.date, d.sunset)),
+      morning: scoreWindow(morningHours(f, d.date), w),
+      evening: scoreWindow(eveningHours(f, d.date, d.sunset), w),
       confidence: confidence(daysBetween(today, d.date) + 1),
     }));
+}
+
+/** Window scores for one day from a forecast (used for a spot's own forecast). */
+export function dayWindows(f: Forecast, date: string, w: Weights = SCORING): { morning: number | null; evening: number | null } | null {
+  const d = f.days.find((x) => x.date === date);
+  if (!d) return null;
+  return { morning: scoreWindow(morningHours(f, date), w), evening: scoreWindow(eveningHours(f, date, d.sunset), w) };
 }
 
 /** Highest-scoring window on a non-shift day; ties go to the earlier one. */
@@ -145,7 +151,7 @@ const COMPASS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 export const compass = (deg: number) => COMPASS[Math.round(deg / 45) % 8];
 
 /** The one-line reason, e.g. "Light wind, clear, 50°F at 7." */
-export function reason(hours: Hour[], at: string): string {
+export function reason(hours: Hour[], at: string, w: Weights = SCORING): string {
   if (hours.length === 0) return 'No forecast for this window yet.';
   const wind = avgOf(hours.map((h) => h.wind));
   const gust = Math.max(...hours.map((h) => h.gust));
@@ -153,7 +159,7 @@ export function reason(hours: Hour[], at: string): string {
   const rain = Math.max(...hours.map((h) => h.rain));
   const parts = [wind <= 9 ? 'light wind' : wind <= 12 ? 'moderate wind' : 'windy'];
   if (gust > 25) parts.push(`gusts to ${Math.round(gust)}`);
-  parts.push(cloud > SCORING.cloudHeavyAbove ? 'overcast' : cloud >= SCORING.cloudPartFrom ? 'mixed cloud' : 'clear');
+  parts.push(cloud > w.cloudHeavyAbove ? 'overcast' : cloud >= w.cloudPartFrom ? 'mixed cloud' : 'clear');
   if (rain >= 15) parts.push(`${rain}% rain chance`);
   const text = parts.join(', ');
   return `${text[0].toUpperCase()}${text.slice(1)}, ${Math.round(hours[0].temp)}°F at ${at}.`;

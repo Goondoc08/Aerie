@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DAYS_SHOWN, REFRESH_HOURS, TIDE, TIMEZONE } from './lib/config';
 import { db, type CacheRow } from './lib/db';
+import { HOTSPOTS, refreshHotspots } from './lib/hotspots';
 import { analyseBirds, refreshBirds, type BirdGroup, type Report } from './lib/birds';
 import { ago, dayId, nowIn, todayIn } from './lib/dates';
-import { refreshForecast } from './lib/forecast';
+import { pointKey, refreshForecast, refreshSpotForecasts, SPOT_FORECASTS } from './lib/forecast';
 import { frontTags } from './lib/fronts';
-import { bestOpenWindow, parseForecast, scoreWeek } from './lib/scoring';
-import { loadSettings, saveSettings, type Settings } from './lib/settings';
+import { bestOpenWindow, parseForecast, scoreWeek, type Forecast } from './lib/scoring';
+import { loadSettings, saveSettings, weightsOf, type Settings } from './lib/settings';
 import type { Spot } from './lib/spots';
 import { parseTides, refreshTides, tideKey } from './lib/tides';
 import type { TideMap } from './lib/where';
@@ -68,6 +69,13 @@ export default function App() {
       const key = tideKey(st), t = cached[key];
       if (force || !t || Date.now() - t.fetchedAt > REFRESH_HOURS.tides * HOUR) run(key, () => refreshTides(st));
     }
+    // Every spot's own forecast, in one request; refetched when old or when the spot list moves.
+    const sf = cached[SPOT_FORECASTS];
+    const want = [...new Set(sp.map(pointKey))].sort().join('|');
+    const have = sf ? [...((sf.data as { keys: string[] }).keys ?? [])].sort().join('|') : '';
+    if (sp.length && (force || !sf || want !== have || Date.now() - sf.fetchedAt > REFRESH_HOURS.forecast * HOUR)) {
+      run(SPOT_FORECASTS, () => refreshSpotForecasts(sp));
+    }
     const b = cached.birds;
     const birdsMoved = b && (b.lat !== s.lat || b.lng !== s.lng);
     if (s.ebirdKey && (force || birdsMoved || !b || Date.now() - b.fetchedAt > REFRESH_HOURS.birds * HOUR)) {
@@ -119,7 +127,15 @@ export default function App() {
   const today = todayIn(TIMEZONE);
   const forecast = rows.forecast ?? null;
   const f = useMemo(() => (forecast ? parseForecast(forecast.data) : null), [forecast]);
-  const week = useMemo(() => (f && settings ? scoreWeek(f, today, DAYS_SHOWN, settings.shiftAnchor) : []), [f, today, settings?.shiftAnchor]);
+  const weights = useMemo(() => (settings ? weightsOf(settings) : null), [settings?.weights]);
+  const week = useMemo(() => (f && settings ? scoreWeek(f, today, DAYS_SHOWN, settings.shiftAnchor, weights!) : []), [f, today, settings?.shiftAnchor, weights]);
+  const sfRow = rows[SPOT_FORECASTS] ?? null;
+  const spotForecasts = useMemo(() => {
+    const m = new Map<string, Forecast>();
+    const d = sfRow?.data as { keys: string[]; results: unknown[] } | undefined;
+    d?.keys.forEach((k, i) => { try { m.set(k, parseForecast(d.results[i])); } catch { /* skip a bad entry */ } });
+    return m;
+  }, [sfRow]);
   const best = useMemo(() => bestOpenWindow(week), [week]);
   const tags = useMemo(() => (f ? frontTags(f) : {}), [f]);
   const tides = useMemo<TideMap>(() => {
@@ -147,6 +163,7 @@ export default function App() {
     notes.push(Number.isFinite(oldest) ? `Tides out of date, last updated ${ago(oldest)}` : 'Tides could not be loaded');
   }
 
+  if (status[SPOT_FORECASTS]?.failed) notes.push('Spot forecasts out of date');
   if (birdRow && settings?.ebirdKey) {
     if (status.birds?.failed) notes.push(`Sightings out of date, last updated ${ago(birdRow.fetchedAt)}`);
     else if (Date.now() - birdRow.fetchedAt > REFRESH_HOURS.staleBanner * HOUR) notes.push(`Sightings from ${ago(birdRow.fetchedAt)}`);
@@ -161,7 +178,7 @@ export default function App() {
   useEffect(() => { if (!detailDay) fromHome.current = false; }, [detailDay]);
   useEffect(() => { if (detailDay) setFocus(detailDay.date); }, [detailDay]);
 
-  const model: Model = { settings: settings!, forecast: f, week, best, spots, tides, today, birds, birdRow, tags };
+  const model: Model = { settings: settings!, forecast: f, week, best, spots, tides, today, birds, birdRow, tags, weights: weights!, spotForecasts };
 
   return (
     <>
@@ -171,6 +188,8 @@ export default function App() {
           <SettingsScreen settings={settings} spots={spots} rows={rows} status={status} stations={stationsFor(spots)}
             onSave={update} onSpotsChanged={reloadSpots}
             onRefresh={(key) => key === 'forecast' ? run(key, () => refreshForecast(settings.lat, settings.lng))
+              : key === SPOT_FORECASTS ? run(key, () => refreshSpotForecasts(spots))
+              : key === HOTSPOTS ? run(key, () => refreshHotspots(settings.lat, settings.lng, settings.ebirdKey))
               : key === 'birds' ? run(key, () => refreshBirds(settings.lat, settings.lng, settings.ebirdKey))
               : run(key, () => refreshTides(key.slice(6)))} />
         ) : detailDay && f ? (
@@ -197,4 +216,7 @@ export type Model = {
   birdRow: CacheRow | null;
   /** Cold front tags by date. */
   tags: Record<string, string[]>;
+  weights: ReturnType<typeof weightsOf>;
+  /** Each spot's own forecast, by pointKey. */
+  spotForecasts: Map<string, Forecast>;
 };

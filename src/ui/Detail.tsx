@@ -47,7 +47,7 @@ export function Detail({ model, day, onBack, onMaxDrive }: Props) {
       <section className={`dhead v-${verdictClass(day.morning)}${day.shift ? ' shift' : ''}`}>
         <div className="date">{weekday(day.date)} {monthDay(day.date)}<small>Forecast: {day.confidence}</small></div>
         <Window name="Morning" score={day.morning} times={t.morning} />
-        <p className="why">{reason(am, '7')}</p>
+        <p className="why">{reason(am, '7', model.weights)}</p>
         <Tags tags={model.tags[day.date]} />
         {am.length > 0 && <HourTable hours={am} gusts />}
         <dl className="kv">
@@ -59,7 +59,7 @@ export function Detail({ model, day, onBack, onMaxDrive }: Props) {
 
       <section className={`panel stack${day.shift ? ' shift' : ''}`}>
         <Window name="Evening" score={day.evening} times={t.evening} />
-        <p className="why">{reason(pm, pmLabel)}</p>
+        <p className="why">{reason(pm, pmLabel, model.weights)}</p>
         {pm.length > 0 && <HourTable hours={pm} gusts />}
         <dl className="kv">
           <dt>Tidal spots</dt>
@@ -69,7 +69,9 @@ export function Detail({ model, day, onBack, onMaxDrive }: Props) {
 
       <section className="panel">
         <h2>Where to go</h2>
-        <div className="sub" style={{ marginBottom: 6 }}>Morning and evening scores for each spot; tidal spots include the tide.</div>
+        <div className="sub" style={{ marginBottom: 6 }}>
+          Morning and evening scores for each spot{model.spotForecasts.size ? ', from its own forecast' : ''}; tidal spots include their own station's tide.
+        </div>
         <div className="set">
           <label htmlFor="max-drive">Max drive</label>
           <input type="range" id="max-drive" min={DRIVE.min} max={DRIVE.max} step={DRIVE.step} value={maxDrive}
