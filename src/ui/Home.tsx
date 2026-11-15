@@ -1,23 +1,22 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { DAYS_SHOWN, REFRESH_HOURS, TIMEZONE } from '../lib/config';
-import type { CacheRow } from '../lib/db';
-import { ago, dayNumber, monthDay, todayIn, weekday } from '../lib/dates';
-import { bestOpenWindow, parseForecast, scoreWeek, verdict } from '../lib/scoring';
-import type { Settings } from '../lib/settings';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { Model } from '../App';
+import { dayNumber, monthDay, weekday } from '../lib/dates';
+import { verdict } from '../lib/scoring';
 import { DayCard } from './DayCard';
 
 export const verdictClass = (score: number | null) =>
   score == null ? 'none' : { Go: 'go', Decent: 'ok', Marginal: 'warn', Skip: 'skip' }[verdict(score)];
 export const verdictText = (score: number | null) => (score == null ? 'No data' : `${verdict(score)} ${score}`);
 
-interface Props { settings: Settings; forecast: CacheRow | null; busy: boolean; failed: boolean }
+interface Props {
+  model: Model; notes: string[]; busy: boolean; failed: boolean;
+  focus: string | null; onFocus: (date: string) => void; onOpen: (date: string) => void;
+}
 
-export function Home({ settings, forecast, busy, failed }: Props) {
-  const today = todayIn(TIMEZONE);
-  const f = useMemo(() => (forecast ? parseForecast(forecast.data) : null), [forecast]);
-  const week = useMemo(() => (f ? scoreWeek(f, today, DAYS_SHOWN, settings.shiftAnchor) : []), [f, today, settings.shiftAnchor]);
-  const best = useMemo(() => bestOpenWindow(week), [week]);
+export function Home({ model, notes, busy, failed, focus, onFocus, onOpen }: Props) {
+  const { settings, forecast: f, week, best } = model;
   const bestIndex = best ? week.findIndex((d) => d.date === best.date) : 0;
+  const focusIndex = focus ? week.findIndex((d) => d.date === focus) : -1;
 
   const [sel, setSel] = useState(0);
   const car = useRef<HTMLDivElement>(null);
@@ -30,13 +29,14 @@ export function Home({ settings, forecast, busy, failed }: Props) {
     c.scrollTo({ left: el.offsetLeft - (c.clientWidth - el.offsetWidth) / 2, behavior: smooth && !calm ? 'smooth' : 'auto' });
   };
 
-  // Open on the day holding the best open window.
+  // Open on the card we came back to, or else the day holding the best open window.
   useLayoutEffect(() => {
     if (opened.current || week.length === 0) return;
     opened.current = true;
-    setSel(bestIndex);
-    center(bestIndex, false);
-  }, [week.length, bestIndex]);
+    const i = focusIndex >= 0 ? focusIndex : bestIndex;
+    setSel(i);
+    center(i, false);
+  }, [week.length, bestIndex, focusIndex]);
 
   // Swiping updates the selected chip.
   useEffect(() => {
@@ -60,17 +60,19 @@ export function Home({ settings, forecast, busy, failed }: Props) {
     return () => { c.removeEventListener('scroll', onScroll); cancelAnimationFrame(tick); };
   }, [week.length]);
 
-  const old = forecast && Date.now() - forecast.fetchedAt > REFRESH_HOURS.staleBanner * 3600000;
-  const note = !forecast ? null
-    : failed ? `Forecast out of date, last updated ${ago(forecast.fetchedAt)}`
-    : old ? `Forecast from ${ago(forecast.fetchedAt)}` : null;
+  // Remember the selected card so Settings or a detail page returns to it.
+  const selDate = week[sel]?.date;
+  useEffect(() => { if (selDate && opened.current) onFocus(selDate); }, [selDate]);
 
   return (
     <>
       <header>
         <div>
           <h1>Aerie</h1>
-          <div className="sub">{settings.homeName}{note && <> · <span className="stale">{note}</span></>}</div>
+          <div className="sub">
+            {settings.homeName}
+            {notes.map((n) => <span key={n}> · <span className="stale">{n}</span></span>)}
+          </div>
         </div>
         <a className="gear" href="#settings" aria-label="Settings">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -107,7 +109,7 @@ export function Home({ settings, forecast, busy, failed }: Props) {
             })}
           </div>
           <div className="car" ref={car} tabIndex={0} aria-label="Days, swipe left and right">
-            {week.map((d) => <DayCard key={d.date} day={d} forecast={f} settings={settings} />)}
+            {week.map((d) => <DayCard key={d.date} day={d} model={model} onOpen={() => onOpen(d.date)} />)}
           </div>
         </div>
       )}

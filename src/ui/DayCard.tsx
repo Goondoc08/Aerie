@@ -1,8 +1,10 @@
-import { TIMEZONE } from '../lib/config';
-import { hourOf, monthDay, shortClock, weekday } from '../lib/dates';
-import { compass, morningHours, reason, type DayScore, type Forecast, type Hour } from '../lib/scoring';
-import type { Settings } from '../lib/settings';
+import type { Model } from '../App';
+import { TIDE, TIMEZONE } from '../lib/config';
+import { clock12, hourOf, monthDay, shortClock, weekday } from '../lib/dates';
+import { compass, morningHours, reason, type DayScore, type Hour } from '../lib/scoring';
+import { dayLow, feet } from '../lib/tides';
 import { clock, sunTimes } from '../lib/twilight';
+import { bestBet, rankSpots } from '../lib/where';
 import { verdictClass, verdictText } from './Home';
 
 const bare = (t: string) => t.replace(/\s?[AP]M$/, '');
@@ -38,20 +40,50 @@ export function Window({ name, times, score }: { name: string; times: string; sc
   );
 }
 
-export function DayCard({ day, forecast, settings }: { day: DayScore; forecast: Forecast; settings: Settings }) {
-  const sun = forecast.days.find((d) => d.date === day.date)!;
-  const light = sunTimes(day.date, settings.lat, settings.lng);
-  const am = morningHours(forecast, day.date);
+/** Morning and evening time lines, shared by the card and the detail page. */
+export function dayTimes(model: Model, date: string) {
+  const sun = model.forecast!.days.find((d) => d.date === date)!;
+  const light = sunTimes(date, model.settings.lat, model.settings.lng);
+  return {
+    sun,
+    morning: `first light ${bare(clock(light.firstLight, TIMEZONE))} · sunrise ${shortClock(sun.sunrise)}`,
+    evening: `sunset ${shortClock(sun.sunset)} · last light ${bare(clock(light.lastLight, TIMEZONE))}`,
+  };
+}
+
+export const lowTideText = (model: Model, date: string) => {
+  const tides = model.tides[TIDE.homeStation];
+  if (!tides) return 'not loaded';
+  const low = dayLow(tides, date);
+  return low ? `${clock12(low.time)} · ${feet(low.ft)} ft` : 'none this day';
+};
+
+export const shortName = (name: string) => name.replace(/ (Nature Center|State Park|Neotropical Bird Sanctuary)$/, '');
+
+export function DayCard({ day, model, onOpen }: { day: DayScore; model: Model; onOpen: () => void }) {
+  const t = dayTimes(model, day.date);
+  const am = morningHours(model.forecast!, day.date);
+  const bet = day.shift ? null : bestBet(rankSpots(model.spots, day, t.sun.sunset, model.tides, model.settings.maxDrive));
   return (
-    <article className={`card v-${verdictClass(day.morning)}${day.shift ? ' shift' : ''}`}>
+    <article className={`card v-${verdictClass(day.morning)}${day.shift ? ' shift' : ''}`} tabIndex={0}
+      aria-label={`${weekday(day.date)} ${monthDay(day.date)}, open details`}
+      onClick={onOpen} onKeyDown={(e) => { if (e.key === 'Enter') onOpen(); }}>
       <div className="date">{weekday(day.date)} {monthDay(day.date)}</div>
-      <Window name="Morning" score={day.morning}
-        times={`first light ${bare(clock(light.firstLight, TIMEZONE))} · sunrise ${shortClock(sun.sunrise)}`} />
+      <Window name="Morning" score={day.morning} times={t.morning} />
       <p className="why">{reason(am, '7')}</p>
       {am.length > 0 && <HourTable hours={am} />}
-      <Window name="Evening" score={day.evening}
-        times={`sunset ${shortClock(sun.sunset)} · last light ${bare(clock(light.lastLight, TIMEZONE))}`} />
-      <div className="foot"><span className="conf">Forecast: {day.confidence}</span></div>
+      <Window name="Evening" score={day.evening} times={t.evening} />
+      <dl className="kv">
+        <dt>Low tide</dt><dd>{lowTideText(model, day.date)}</dd>
+        {!day.shift && <>
+          <dt>Best bet</dt>
+          <dd className="bet">{bet ? <>{shortName(bet.row.spot.name)}, {bet.which} <span className={`pill sm ${verdictClass(bet.score)}`}>{verdictText(bet.score)}</span></> : 'No spots in range'}</dd>
+        </>}
+      </dl>
+      <div className="foot">
+        <span className="conf">Forecast: {day.confidence}</span>
+        <span className="more" aria-hidden="true">Details ›</span>
+      </div>
     </article>
   );
 }

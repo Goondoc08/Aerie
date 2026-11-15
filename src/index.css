@@ -81,3 +81,34 @@ table.hrs{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:
 @media (prefers-reduced-motion:reduce){#splash{transition:none}#splash img{animation:none}}
 .row2>*{min-width:0}
 .field input{width:100%;box-sizing:border-box}
+/* Phase 2: card details, day detail, spot list, settings spot editor. From aerie-mockup.html. */
+.card{cursor:pointer}
+.chip:focus-visible,.card:focus-visible,.back:focus-visible,.gear:focus-visible,.btn:focus-visible,.set input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.date small{display:block;font-family:var(--body);font-weight:400;font-size:13px;color:var(--muted);margin-top:3px}
+dl.kv{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:13.5px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;min-width:0}
+.more{font-weight:600;font-size:13.5px;color:var(--accent)}
+.detail{display:flex;flex-direction:column;gap:14px}
+.dhead{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.dhead.v-go{border-top-color:var(--go)}.dhead.v-ok{border-top-color:var(--ok)}.dhead.v-warn{border-top-color:var(--warn)}.dhead.v-skip{border-top-color:var(--skip)}
+.dhead.shift,.panel.shift{background:transparent;border-style:dashed;border-top-style:solid}
+.dhead.shift>*,.panel.shift>*{opacity:.5}
+.panel.stack{display:flex;flex-direction:column;gap:10px}
+.spots{display:flex;flex-direction:column}
+.spot{padding:10px 0;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 14px}
+.spot:first-child{border-top:0}
+.spot.far{opacity:.4}
+.spot .n{font-weight:600;min-width:0} .spot .n small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.spot .note{flex:1 1 240px;min-width:0;color:var(--muted);font-size:13.5px}
+.scores{display:flex;align-items:center;gap:4px;margin-left:auto}
+.scores .lbl{font-size:11px;color:var(--muted);letter-spacing:.04em}
+.scores .lbl:not(:first-child){margin-left:6px}
+.pill.sm{font-size:12px;padding:2px 8px}
+.set{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:6px;font-size:13.5px;color:var(--muted)}
+.set input{accent-color:var(--accent);flex:1 1 180px;max-width:320px}.set output{font-family:var(--mono);color:var(--fg)}
+.spot-form{padding:12px 0;border-top:1px solid var(--line)}
+.check{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted)}
+.check input{accent-color:var(--accent);width:18px;height:18px}
+.field input:disabled{opacity:.5}
+.kv dd.bet{text-wrap:balance}
+.spot .actions{margin-left:auto}

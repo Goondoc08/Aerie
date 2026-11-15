@@ -32,6 +32,12 @@ export const dayId = (day: string) => monthDay(day).toLowerCase().replace(' ', '
 /** "2026-11-17T06:47" -> "6:47" */
 export const shortClock = (isoLocal: string) => `${hourOf(isoLocal) % 12 || 12}:${isoLocal.slice(14, 16)}`;
 
+/** "2026-11-17 14:37" -> "2:37 PM" */
+export const clock12 = (isoLocal: string) => `${shortClock(isoLocal)} ${hourOf(isoLocal) < 12 ? 'AM' : 'PM'}`;
+
+/** "2026-11-17" -> "20261117" */
+export const compactDay = (day: string) => day.replaceAll('-', '');
+
 export function ago(ms: number, now = Date.now()): string {
   const mins = Math.max(0, Math.round((now - ms) / 60000));
   if (mins < 60) return `${mins} min ago`;

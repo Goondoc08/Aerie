@@ -40,6 +40,7 @@ export const TIDE = {
   poorAboveFt: 0.7,
   poorPenalty: 8,
   noLowPenalty: 15,
+  homeStation: '8771450', // Galveston Pier 21, used for the low tide line on each card
 };
 
 export const SHIFT = {

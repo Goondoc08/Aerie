@@ -1,9 +1,9 @@
 import Dexie, { type Table } from 'dexie';
-import { SEED_SPOTS, type Spot } from './spots';
+import { SEED_SPOTS, SPOT_RENAMES, type Spot } from './spots';
 
 // Only raw fetched data, settings and spots are stored. Scores are worked out on screen.
 export interface CacheRow {
-  source: 'forecast' | 'tides' | 'birds';
+  source: string; // 'forecast', 'tides:<station id>', later 'birds'
   fetchedAt: number;
   data: unknown;
   lat?: number;
@@ -18,6 +18,11 @@ class AerieDB extends Dexie {
   constructor() {
     super('aerie');
     this.version(1).stores({ cache: 'source', settings: 'key', spots: '++id' });
+    // Version 2 corrects two seeded spot names on devices that already have the list.
+    this.version(2).stores({ cache: 'source', settings: 'key', spots: '++id' }).upgrade((tx) =>
+      tx.table<Spot, number>('spots').toCollection().modify((s) => {
+        if (SPOT_RENAMES[s.name]) s.name = SPOT_RENAMES[s.name];
+      }));
     this.on('populate', () => { this.spots.bulkAdd(SEED_SPOTS); });
   }
 }
