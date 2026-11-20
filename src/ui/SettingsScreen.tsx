@@ -1,9 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import type { Sources } from '../App';
-import { DRIVE, SCORING, type Weights } from '../lib/config';
+import { DRIVE, SCORING, SHIFT, type Weights } from '../lib/config';
 import { db, type CacheRow } from '../lib/db';
 import { ago } from '../lib/dates';
 import type { Settings } from '../lib/settings';
+import { estimateDrive } from '../lib/geo';
+import type { ScheduleMode } from '../lib/shifts';
+import { lookupZip } from '../lib/zip';
 import type { Spot } from '../lib/spots';
 import { SPOT_FORECASTS } from '../lib/forecast';
 import { HOTSPOTS, rankHotspots, type Suggestion } from '../lib/hotspots';
@@ -16,13 +19,35 @@ interface Props {
   onSave: (patch: Partial<Settings>) => Promise<void>; onSpotsChanged: () => Promise<void>; onRefresh: (key: string) => void;
 }
 
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 const inRange = (s: string, lo: number, hi: number) => s.trim() !== '' && Number.isFinite(Number(s)) && Number(s) >= lo && Number(s) <= hi;
 
 export function SettingsScreen({ settings, spots, rows, status, stations, onSave, onSpotsChanged, onRefresh }: Props) {
   const [name, setName] = useState(settings.homeName);
   const [lat, setLat] = useState(String(settings.lat));
   const [lng, setLng] = useState(String(settings.lng));
+  const [zip, setZip] = useState(settings.homeZip);
+  const [zipMsg, setZipMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [mode, setMode] = useState<ScheduleMode>(settings.scheduleMode);
+  const [workDays, setWorkDays] = useState<number[]>(settings.workDays);
   const [anchor, setAnchor] = useState(settings.shiftAnchor);
+  const findZip = async () => {
+    setZipMsg({ ok: true, text: 'Looking up the ZIP…' });
+    try {
+      const p = await lookupZip(zip);
+      setZip(p.zip); setName(p.name); setLat(p.lat.toFixed(4)); setLng(p.lng.toFixed(4));
+      setZipMsg({ ok: true, text: `Found ${p.name}. Tap Save to use it.` });
+    } catch (e) {
+      setZipMsg({ ok: false, text: e instanceof Error ? e.message : 'Could not look up the ZIP code.' });
+    }
+  };
+  const toggleDay = (d: number) => setWorkDays((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d].sort()));
+  const reestimate = async () => {
+    if (!confirm(`Replace every spot's drive time with a straight-line estimate from ${settings.homeName}?`)) return;
+    await db.spots.bulkPut(spots.map((s) => ({ ...s, driveMin: estimateDrive(settings.lat, settings.lng, s.lat, s.lng) })));
+    await onSpotsChanged();
+  };
   const [drive, setDrive] = useState(String(settings.maxDrive));
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [editing, setEditing] = useState<number | 'new' | null>(null);
@@ -38,12 +63,13 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
     e.preventDefault();
     if (!inRange(lat, -90, 90)) return setMsg({ ok: false, text: 'Latitude must be a number from -90 to 90.' });
     if (!inRange(lng, -180, 180)) return setMsg({ ok: false, text: 'Longitude must be a number from -180 to 180.' });
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(anchor)) return setMsg({ ok: false, text: 'Pick the first day of a shift pair.' });
+    if (mode === 'rotation' && !/^\d{4}-\d{2}-\d{2}$/.test(anchor)) return setMsg({ ok: false, text: 'Pick the first work day of a pair.' });
     const d = Math.round(Number(drive) / DRIVE.step) * DRIVE.step;
     if (!inRange(drive, DRIVE.min, DRIVE.max)) return setMsg({ ok: false, text: `Max drive must be from ${DRIVE.min} to ${DRIVE.max} minutes.` });
-    await onSave({ homeName: name.trim() || 'Home', lat: Number(lat), lng: Number(lng), shiftAnchor: anchor, maxDrive: d });
+    const zipChanged = zip.trim() !== settings.homeZip;
+    await onSave({ homeName: name.trim() || 'Home', homeZip: zip.trim(), lat: Number(lat), lng: Number(lng), scheduleMode: mode, shiftAnchor: anchor, workDays, maxDrive: d });
     setDrive(String(d));
-    setMsg({ ok: true, text: 'Saved' });
+    setMsg({ ok: true, text: zipChanged ? 'Saved. If home moved, re-estimate the spot drive times below.' : 'Saved' });
   };
 
   const sorted = [...spots].sort((a, b) => a.driveMin - b.driveMin || a.name.localeCompare(b.name));
@@ -60,6 +86,13 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
       <h1>Settings</h1>
       <form className="panel form" onSubmit={submit}>
         <h2>Home and schedule</h2>
+        <div className="key-row">
+          <label className="field" htmlFor="home-zip">Home ZIP code
+            <input id="home-zip" className="text" inputMode="numeric" autoComplete="postal-code" maxLength={10} value={zip} onChange={(e) => setZip(e.target.value)} />
+          </label>
+          <button className="btn" type="button" onClick={findZip}>Look up</button>
+        </div>
+        {zipMsg && <div className={zipMsg.ok ? 'sub' : 'err'} role="status">{zipMsg.text}</div>}
         <label className="field" htmlFor="home-name">Place name
           <input id="home-name" className="text" value={name} onChange={(e) => setName(e.target.value)} />
         </label>
@@ -71,10 +104,25 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
             <input id="home-lng" inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} />
           </label>
         </div>
+        <fieldset className="sched">
+          <legend>Work days (darkened on the week)</legend>
+          <label className="check"><input type="radio" name="sched" checked={mode === 'rotation'} onChange={() => setMode('rotation')} /> Rotation: {SHIFT.shiftDays} work days in every {SHIFT.cycleDays}</label>
+          {mode === 'rotation' && (
+            <label className="field" htmlFor="shift-anchor">First work day of a pair
+              <input id="shift-anchor" type="date" value={anchor} onChange={(e) => setAnchor(e.target.value)} />
+            </label>
+          )}
+          <label className="check"><input type="radio" name="sched" checked={mode === 'weekdays'} onChange={() => setMode('weekdays')} /> Set days each week</label>
+          {mode === 'weekdays' && (
+            <div className="days" role="group" aria-label="Work days each week">
+              {WEEKDAYS.map((w, i) => (
+                <button key={w} type="button" className="day-t" aria-pressed={workDays.includes(i)} onClick={() => toggleDay(i)}>{w}</button>
+              ))}
+            </div>
+          )}
+          <label className="check"><input type="radio" name="sched" checked={mode === 'none'} onChange={() => setMode('none')} /> No work days</label>
+        </fieldset>
         <div className="row2">
-          <label className="field" htmlFor="shift-anchor">First day of a shift pair
-            <input id="shift-anchor" type="date" value={anchor} onChange={(e) => setAnchor(e.target.value)} />
-          </label>
           <label className="field" htmlFor="max-drive-default">Max drive, minutes
             <input id="max-drive-default" inputMode="numeric" value={drive} onChange={(e) => setDrive(e.target.value)} />
           </label>
@@ -106,7 +154,10 @@ export function SettingsScreen({ settings, spots, rows, status, stations, onSave
           {editing === 'new' && <SpotForm key={draft?.name ?? 'new'} spot={draft} isNew onDone={async () => { setEditing(null); setDraft(undefined); await onSpotsChanged(); }} />}
         </div>
         {editing !== 'new' && (
-          <div className="actions"><button className="btn" type="button" onClick={() => { setDraft(undefined); setEditing('new'); }}>Add a spot</button></div>
+          <div className="actions">
+            <button className="btn" type="button" onClick={() => { setDraft(undefined); setEditing('new'); }}>Add a spot</button>
+            <button className="btn" type="button" onClick={reestimate}>Re-estimate drive times from home</button>
+          </div>
         )}
       </section>
 

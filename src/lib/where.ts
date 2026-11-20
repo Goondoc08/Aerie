@@ -41,6 +41,8 @@ export interface SpotOptions {
   birds?: BirdGroup[];
   /** A spot's own window scores, when it has its own forecast. */
   base?: (spot: Spot) => { morning: number | null; evening: number | null } | null;
+  /** Drive times were worked out from a visited place, so they are estimates. */
+  estimated?: boolean;
 }
 
 export const TEMP_TYPE = 'temporary, while the bird keeps being reported';
@@ -74,6 +76,7 @@ export function rankSpots(spots: Spot[], day: DayScore, sunset: string, tides: T
       bird: here.find((b) => b.qualifies),
       watch: here.some((b) => b.qualifies) ? undefined : here[0],
       ownForecast: own != null,
+      driveEstimated: opts.estimated || undefined,
     };
   };
 

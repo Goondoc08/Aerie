@@ -2,7 +2,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Model } from '../App';
 import { dayNumber, monthDay, weekday } from '../lib/dates';
 import { verdict } from '../lib/scoring';
+import type { Place } from '../lib/settings';
 import { DayCard } from './DayCard';
+import { PlaceBar } from './PlaceBar';
 
 export const verdictClass = (score: number | null) =>
   score == null ? 'none' : { Go: 'go', Decent: 'ok', Marginal: 'warn', Skip: 'skip' }[verdict(score)];
@@ -11,9 +13,10 @@ export const verdictText = (score: number | null) => (score == null ? 'No data' 
 interface Props {
   model: Model; notes: string[]; busy: boolean; failed: boolean;
   focus: string | null; onFocus: (date: string) => void; onOpen: (date: string) => void;
+  onVisit: (p: Place | null) => Promise<void>;
 }
 
-export function Home({ model, notes, busy, failed, focus, onFocus, onOpen }: Props) {
+export function Home({ model, notes, busy, failed, focus, onFocus, onOpen, onVisit }: Props) {
   const { settings, forecast: f, week, best } = model;
   const bestIndex = best ? week.findIndex((d) => d.date === best.date) : 0;
   const focusIndex = focus ? week.findIndex((d) => d.date === focus) : -1;
@@ -73,6 +76,7 @@ export function Home({ model, notes, busy, failed, focus, onFocus, onOpen }: Pro
             {settings.homeName}
             {notes.map((n) => <span key={n}> · <span className="stale">{n}</span></span>)}
           </div>
+          <PlaceBar settings={settings} onVisit={onVisit} />
         </div>
         <a className="gear" href="#settings" aria-label="Settings">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

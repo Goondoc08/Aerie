@@ -13,3 +13,4 @@ Phase 2 (detail, spots, tides) is in place: day detail pages (#nov-17), spot lis
 Phase 3 (unusual birds) is in place: eBird key in Settings (stored on the device only), notable-sightings filter and labels, spot tags, temporary entries, birds panel, card counts.
 Phase 4 (fronts and seasons) is in place: cold front and first-clear-morning tags (rule and thresholds in config.ts, FRONT), BirdCast link in spring and fall.
 Phase 5 (sharper inputs) is in place: a forecast per spot, the nearest NOAA station per tidal spot (with a finder in the spot editor), eBird hotspot suggestions ranked by recent checklists, and score weights editable in Settings.
+Places and schedule: home can be set from a ZIP code (Zippopotam, with Open-Meteo geocoding as fallback); "Plan from another ZIP" on the main screen moves the forecast, birds and drive estimates to that place and adds its busiest eBird hotspots to Where to go; work days can be a rotation, set weekdays, or none.

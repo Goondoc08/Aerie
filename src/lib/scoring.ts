@@ -1,6 +1,6 @@
 import { CONFIDENCE, SCORING, TIDE, VERDICTS, WINDOWS, type VerdictWord, type Weights } from './config';
 import { dayOf, daysBetween, hourOf, minutesOf } from './dates';
-import { isShiftDay } from './shifts';
+import { isWorkDay, type Schedule } from './shifts';
 
 export interface Hour {
   time: string; // "2026-11-17T07:00"
@@ -113,13 +113,13 @@ export interface DayScore {
 }
 
 /** Up to `count` days starting at `today`; older cached days are dropped. */
-export function scoreWeek(f: Forecast, today: string, count: number, anchorDate?: string, w: Weights = SCORING): DayScore[] {
+export function scoreWeek(f: Forecast, today: string, count: number, schedule?: Schedule | string, w: Weights = SCORING): DayScore[] {
   return f.days
     .filter((d) => d.date >= today)
     .slice(0, count)
     .map((d) => ({
       date: d.date,
-      shift: isShiftDay(d.date, anchorDate),
+      shift: isWorkDay(d.date, schedule),
       morning: scoreWindow(morningHours(f, d.date), w),
       evening: scoreWindow(eveningHours(f, d.date, d.sunset), w),
       confidence: confidence(daysBetween(today, d.date) + 1),

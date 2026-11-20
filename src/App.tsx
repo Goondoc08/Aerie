@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DAYS_SHOWN, REFRESH_HOURS, TIDE, TIMEZONE } from './lib/config';
 import { db, type CacheRow } from './lib/db';
-import { HOTSPOTS, refreshHotspots } from './lib/hotspots';
+import { HOTSPOTS, HOTSPOTS_VISIT, rankHotspots, refreshHotspots } from './lib/hotspots';
 import { analyseBirds, refreshBirds, type BirdGroup, type Report } from './lib/birds';
 import { ago, dayId, nowIn, todayIn } from './lib/dates';
 import { pointKey, refreshForecast, refreshSpotForecasts, SPOT_FORECASTS } from './lib/forecast';
 import { frontTags } from './lib/fronts';
 import { bestOpenWindow, parseForecast, scoreWeek, type Forecast } from './lib/scoring';
-import { loadSettings, saveSettings, weightsOf, type Settings } from './lib/settings';
+import { loadSettings, placeOf, saveSettings, scheduleOf, weightsOf, type Place, type Settings } from './lib/settings';
 import type { Spot } from './lib/spots';
 import { parseTides, refreshTides, tideKey } from './lib/tides';
 import type { TideMap } from './lib/where';
@@ -17,6 +17,11 @@ import { SettingsScreen } from './ui/SettingsScreen';
 import { Splash } from './ui/Splash';
 
 const HOUR = 3600000;
+/** Cached data counts as fetched for a place when it is within about a kilometre of it. */
+const near = (r: CacheRow | undefined, p: { lat: number; lng: number }) =>
+  !!r && r.lat != null && r.lng != null && Math.abs(r.lat - p.lat) < 0.01 && Math.abs(r.lng - p.lng) < 0.01;
+/** Visit hotspots shown in Where to go. */
+const VISIT_HOTSPOTS = 5;
 const useHash = () => {
   const [hash, setHash] = useState(location.hash.slice(1));
   useEffect(() => {
@@ -60,10 +65,10 @@ export default function App() {
   }, []);
 
   const refreshAll = useCallback((s: Settings, sp: Spot[], cached: Record<string, CacheRow>, force: boolean) => {
+    const at = placeOf(s);
     const f = cached.forecast;
-    const moved = f && (f.lat !== s.lat || f.lng !== s.lng);
-    if (force || moved || !f || Date.now() - f.fetchedAt > REFRESH_HOURS.forecast * HOUR) {
-      run('forecast', () => refreshForecast(s.lat, s.lng));
+    if (force || !near(f, at) || Date.now() - f.fetchedAt > REFRESH_HOURS.forecast * HOUR) {
+      run('forecast', () => refreshForecast(at.lat, at.lng));
     }
     for (const st of stationsFor(sp)) {
       const key = tideKey(st), t = cached[key];
@@ -77,9 +82,13 @@ export default function App() {
       run(SPOT_FORECASTS, () => refreshSpotForecasts(sp));
     }
     const b = cached.birds;
-    const birdsMoved = b && (b.lat !== s.lat || b.lng !== s.lng);
-    if (s.ebirdKey && (force || birdsMoved || !b || Date.now() - b.fetchedAt > REFRESH_HOURS.birds * HOUR)) {
-      run('birds', () => refreshBirds(s.lat, s.lng, s.ebirdKey));
+    if (s.ebirdKey && (force || !near(b, at) || Date.now() - b.fetchedAt > REFRESH_HOURS.birds * HOUR)) {
+      run('birds', () => refreshBirds(at.lat, at.lng, s.ebirdKey));
+    }
+    // While visiting, the busiest eBird hotspots near that place join Where to go.
+    const hv = cached[HOTSPOTS_VISIT];
+    if (s.visit && s.ebirdKey && (force || !near(hv, at) || Date.now() - hv.fetchedAt > 24 * HOUR)) {
+      run(HOTSPOTS_VISIT, () => refreshHotspots(at.lat, at.lng, s.ebirdKey, HOTSPOTS_VISIT));
     }
   }, [run]);
 
@@ -112,9 +121,20 @@ export default function App() {
     const next = { ...settings, ...patch };
     setSettings(next);
     await saveSettings(patch);
-    const moved = next.lat !== settings.lat || next.lng !== settings.lng;
-    if (moved) run('forecast', () => refreshForecast(next.lat, next.lng));
-    if (next.ebirdKey && (moved || next.ebirdKey !== settings.ebirdKey)) run('birds', () => refreshBirds(next.lat, next.lng, next.ebirdKey));
+    const was = placeOf(settings), at = placeOf(next);
+    const moved = was.lat !== at.lat || was.lng !== at.lng;
+    if (moved) run('forecast', () => refreshForecast(at.lat, at.lng));
+    if (next.ebirdKey && (moved || next.ebirdKey !== settings.ebirdKey)) run('birds', () => refreshBirds(at.lat, at.lng, next.ebirdKey));
+    if (next.visit && next.ebirdKey && (moved || !near(rows[HOTSPOTS_VISIT], at))) {
+      run(HOTSPOTS_VISIT, () => refreshHotspots(at.lat, at.lng, next.ebirdKey, HOTSPOTS_VISIT));
+    }
+  };
+
+  /** Plan from another place, or pass null to go back to home. Remembers the last three places. */
+  const visit = (p: Place | null) => {
+    if (!settings) return Promise.resolve();
+    const recentVisits = p ? [p, ...settings.recentVisits.filter((r) => r.zip !== p.zip)].slice(0, 3) : settings.recentVisits;
+    return update({ visit: p, recentVisits });
   };
 
   const reloadSpots = async () => {
@@ -128,7 +148,7 @@ export default function App() {
   const forecast = rows.forecast ?? null;
   const f = useMemo(() => (forecast ? parseForecast(forecast.data) : null), [forecast]);
   const weights = useMemo(() => (settings ? weightsOf(settings) : null), [settings?.weights]);
-  const week = useMemo(() => (f && settings ? scoreWeek(f, today, DAYS_SHOWN, settings.shiftAnchor, weights!) : []), [f, today, settings?.shiftAnchor, weights]);
+  const week = useMemo(() => (f && settings ? scoreWeek(f, today, DAYS_SHOWN, scheduleOf(settings), weights!) : []), [f, today, settings?.scheduleMode, settings?.shiftAnchor, settings?.workDays, weights]);
   const sfRow = rows[SPOT_FORECASTS] ?? null;
   const spotForecasts = useMemo(() => {
     const m = new Map<string, Forecast>();
@@ -146,13 +166,24 @@ export default function App() {
 
   const birdRow = rows.birds ?? null;
   // Sightings count only while a key is set; removing the key hides them.
-  const birds = useMemo(() => (birdRow && settings?.ebirdKey
-    ? analyseBirds(birdRow.data as Report[], nowIn(TIMEZONE), { lat: settings.lat, lng: settings.lng, spots })
-    : null), [birdRow, settings?.ebirdKey, settings?.lat, settings?.lng, spots]);
+  const here = settings ? placeOf(settings) : null;
+  const birds = useMemo(() => (birdRow && settings?.ebirdKey && here
+    ? analyseBirds(birdRow.data as Report[], nowIn(TIMEZONE), { lat: here.lat, lng: here.lng, spots })
+    : null), [birdRow, settings?.ebirdKey, here?.lat, here?.lng, spots]);
+  const hvRow = rows[HOTSPOTS_VISIT];
+  const visitSpots = useMemo<Spot[]>(() => {
+    if (!settings?.visit || !settings.ebirdKey || !near(hvRow, settings.visit)) return [];
+    const v = settings.visit;
+    return rankHotspots(hvRow.data as any, v, spots)
+      .filter((h) => h.driveMin <= settings.maxDrive)
+      .slice(0, VISIT_HOTSPOTS)
+      .map((h) => ({ name: h.name, type: `eBird hotspot near ${v.name}`, lat: h.lat, lng: h.lng, driveMin: h.driveMin, tidal: false }));
+  }, [hvRow, settings?.visit, settings?.ebirdKey, settings?.maxDrive, spots]);
 
   // Header notes: say which part is out of date, and the forecast's age past six hours.
   const notes: string[] = [];
-  if (forecast) {
+  if (forecast && here && !near(forecast, here)) notes.push(status.forecast?.failed ? `Forecast for ${here.name} could not be loaded; showing the last place` : `Loading the forecast for ${here.name}`);
+  else if (forecast) {
     if (status.forecast?.failed) notes.push(`Forecast out of date, last updated ${ago(forecast.fetchedAt)}`);
     else if (Date.now() - forecast.fetchedAt > REFRESH_HOURS.staleBanner * HOUR) notes.push(`Forecast from ${ago(forecast.fetchedAt)}`);
   }
@@ -178,7 +209,7 @@ export default function App() {
   useEffect(() => { if (!detailDay) fromHome.current = false; }, [detailDay]);
   useEffect(() => { if (detailDay) setFocus(detailDay.date); }, [detailDay]);
 
-  const model: Model = { settings: settings!, forecast: f, week, best, spots, tides, today, birds, birdRow, tags, weights: weights!, spotForecasts };
+  const model: Model = { settings: settings!, forecast: f, week, best, spots, tides, today, birds, birdRow, tags, weights: weights!, spotForecasts, visitSpots };
 
   return (
     <>
@@ -187,16 +218,16 @@ export default function App() {
         {!loaded || !settings ? null : hash === 'settings' ? (
           <SettingsScreen settings={settings} spots={spots} rows={rows} status={status} stations={stationsFor(spots)}
             onSave={update} onSpotsChanged={reloadSpots}
-            onRefresh={(key) => key === 'forecast' ? run(key, () => refreshForecast(settings.lat, settings.lng))
+            onRefresh={(key) => key === 'forecast' ? run(key, () => refreshForecast(here!.lat, here!.lng))
               : key === SPOT_FORECASTS ? run(key, () => refreshSpotForecasts(spots))
               : key === HOTSPOTS ? run(key, () => refreshHotspots(settings.lat, settings.lng, settings.ebirdKey))
-              : key === 'birds' ? run(key, () => refreshBirds(settings.lat, settings.lng, settings.ebirdKey))
+              : key === 'birds' ? run(key, () => refreshBirds(here!.lat, here!.lng, settings.ebirdKey))
               : run(key, () => refreshTides(key.slice(6)))} />
         ) : detailDay && f ? (
           <Detail model={model} day={detailDay} onBack={goHome} onMaxDrive={(maxDrive) => update({ maxDrive })} />
         ) : (
           <Home model={model} notes={notes} busy={!!status.forecast?.busy} failed={!!status.forecast?.failed}
-            focus={focus} onFocus={setFocus} onOpen={openDay} />
+            focus={focus} onFocus={setFocus} onOpen={openDay} onVisit={visit} />
         )}
       </div>
     </>
@@ -219,4 +250,6 @@ export type Model = {
   weights: ReturnType<typeof weightsOf>;
   /** Each spot's own forecast, by pointKey. */
   spotForecasts: Map<string, Forecast>;
+  /** eBird hotspots near a visited place, shown in Where to go while visiting. */
+  visitSpots: Spot[];
 };

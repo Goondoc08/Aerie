@@ -3,6 +3,7 @@ import { TIDE, TIMEZONE } from '../lib/config';
 import { birdsApply } from '../lib/birds';
 import { clock12, daysBetween, hourOf, monthDay, shortClock, weekday } from '../lib/dates';
 import { pointKey } from '../lib/forecast';
+import { estimateDrive } from '../lib/geo';
 import { compass, dayWindows, morningHours, reason, type DayScore, type Hour } from '../lib/scoring';
 import { dayLow, feet } from '../lib/tides';
 import { clock, sunTimes } from '../lib/twilight';
@@ -68,7 +69,12 @@ export function spotRows(model: Model, day: DayScore) {
     const f = model.spotForecasts.get(pointKey(spot));
     return f ? dayWindows(f, day.date, model.weights) : null;
   };
-  return rankSpots(model.spots, day, sun.sunset, model.tides, model.settings.maxDrive, { birds, base });
+  // While visiting, every drive time is estimated from the visited place, and nearby hotspots join the list.
+  const v = model.settings.visit;
+  const spots = v
+    ? [...model.spots, ...model.visitSpots].map((s) => ({ ...s, driveMin: estimateDrive(v.lat, v.lng, s.lat, s.lng) }))
+    : model.spots;
+  return rankSpots(spots, day, sun.sunset, model.tides, model.settings.maxDrive, { birds, base, estimated: !!v });
 }
 
 /** Unusual birds in range, for the next four days only; null on other days or with no sightings data. */

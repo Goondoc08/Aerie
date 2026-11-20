@@ -9,6 +9,8 @@ const API = 'https://api.ebird.org/v2';
 const MAX_COUNTIES = 4;
 const LIST_SIZE = 200;
 export const HOTSPOTS = 'hotspots';
+/** Hotspots near a place being visited, kept apart from the home suggestions in Settings. */
+export const HOTSPOTS_VISIT = 'hotspots:visit';
 
 export interface Suggestion {
   locId: string;
@@ -30,7 +32,7 @@ const get = async (url: string, key: string) => {
 };
 
 /** Hotspots with sightings this week within 50 km, plus each busy county's recent checklists. */
-export async function refreshHotspots(lat: number, lng: number, key: string): Promise<CacheRow> {
+export async function refreshHotspots(lat: number, lng: number, key: string, source: string = HOTSPOTS): Promise<CacheRow> {
   const q = new URLSearchParams({ lat: lat.toFixed(4), lng: lng.toFixed(4), dist: String(BIRDS.radiusKm), back: '7', fmt: 'json' });
   const hotspots = await get(`${API}/ref/hotspot/geo?${q}`, key);
   if (!Array.isArray(hotspots)) throw new Error('eBird hotspot reply is not a list');
@@ -40,7 +42,7 @@ export async function refreshHotspots(lat: number, lng: number, key: string): Pr
   for (const c of counties) {
     try { lists[c] = await get(`${API}/product/lists/${c}?maxResults=${LIST_SIZE}`, key); } catch { lists[c] = []; }
   }
-  const row: CacheRow = { source: HOTSPOTS, fetchedAt: Date.now(), data: { hotspots, lists }, lat, lng };
+  const row: CacheRow = { source, fetchedAt: Date.now(), data: { hotspots, lists }, lat, lng };
   await db.cache.put(row);
   return row;
 }
